@@ -49,8 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth_token');
     // Force navigation to login page (respect base URL for GitHub Pages)
     const BASE = (import.meta as any).env?.BASE_URL || '/';
-    const loginPath = new URL('login', window.location.origin + BASE).pathname;
-    window.location.href = loginPath;
+    const loginUrl = new URL('login', window.location.origin + BASE).toString();
+    window.location.href = loginUrl;
   };
 
   return (
