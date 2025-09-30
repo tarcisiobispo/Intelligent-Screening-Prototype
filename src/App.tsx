@@ -54,7 +54,7 @@ function Router() {
 
       if (link && link.href && link.origin === window.location.origin) {
         e.preventDefault();
-        const newPath = link.pathname;
+        const newPath = fromAbsolute(link.pathname);
         window.history.pushState({}, '', toAbsolute(newPath));
         updatePath();
       }
