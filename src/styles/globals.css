@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+
+/* Sidebar mini/expandido responsivo com hover */
+.sidebar {
+  width: 88px;
+  min-width: 88px;
+  max-width: 88px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  z-index: 40;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE/Edge */
+}
+
+/* Remove scrollbar webkit - FORÇADO */
+.sidebar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  display: none !important;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  display: none !important;
+}
+
+.sidebar--expanded {
+  width: 256px;
+  min-width: 256px;
+  max-width: 256px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sidebar--expanded::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.sidebar .sidebar-label {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar--expanded .sidebar-label {
+  display: inline;
+  opacity: 1;
+  pointer-events: auto;
+  width: auto;
+}
+
+/* Animação suave para os ícones */
+.sidebar a {
+  position: relative;
+}
+
+/* Links - sempre com mesmo padding e posição do ícone */
+.sidebar a {
+  padding: 0.625rem 1rem !important;
+  margin: 0.125rem 0.75rem !important;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar a > svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+  transition: none;
+  margin: 0;
+}
+
+/* Quando recolhido, centraliza apenas o conteúdo */
+.sidebar:not(.sidebar--expanded) a {
+  justify-content: center;
+}
+
+/* Labels com transição suave */
+.sidebar a .sidebar-label {
+  transition: opacity 0.2s ease-in-out, width 0.2s ease-in-out;
+}
+
+/* Esconde o texto quando recolhido */
+.sidebar:not(.sidebar--expanded) .sidebar-label {
+  display: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Remove scrollbar do nav também */
+.sidebar nav {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.sidebar nav::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Ajusta o header do logo quando recolhido */
+.sidebar:not(.sidebar--expanded) > div > div:first-child {
+  padding: 1rem 0.75rem !important;
+  justify-content: flex-start !important;
+}
+
+.sidebar:not(.sidebar--expanded) > div > div:first-child > div:first-child {
+  gap: 0 !important;
+  justify-content: flex-start !important;
+}
+
+/* Footer quando recolhido */
+.sidebar:not(.sidebar--expanded) > div > div:last-child {
+  padding: 1rem 0.75rem !important;
+}
+
+/* Mobile: sidebar ocupa tela inteira */
+@media (max-width: 1023px) {
+  .sidebar, .sidebar--expanded {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    position: fixed !important;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .sidebar.show, .sidebar--expanded.show {
+    transform: translateX(0);
+  }
+  
+  .sidebar .sidebar-label, .sidebar--expanded .sidebar-label {
+    display: inline;
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+  }
+}
+
+/* Desktop: ajusta margem do conteúdo */
+@media (min-width: 1024px) {
+  .main-content {
+    margin-left: 88px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Variáveis de tema para compatibilidade com utilitários customizados */
+:root {
+  --primary: #005B8F;
+  --primary-700: #00395a;
+  --success: #2ECC71;
+  --danger: #D64545;
+  --warning: #F6C85F;
+  --accent: #FF8A00;
+  --muted: #64748B;
+  --text: #1E293B;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  /* shadcn/ui tokens */
+  --card: #FFFFFF;
+  --card-foreground: #1E293B;
+  --input-background: #F8FAFC;
+  --input: #E2E8F0;
+  --muted-foreground: #64748B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F6C85F;
+  --secondary-foreground: #1E293B;
+  --accent-foreground: #FFFFFF;
+  --destructive: #D64545;
+  --destructive-foreground: #FFFFFF;
+  --ring: #005B8F;
+  --background: #F8FAFC;
+  --foreground: #1E293B;
+}
+
+[data-theme='dark'], .dark {
+  --primary: #4FA3D9;
+  --primary-700: #005B8F;
+  --success: #2ECC71;
+  --danger: #D64545;
+  --warning: #F6C85F;
+  --accent: #FF8A00;
+  --muted: #94A3B8;
+  --text: #F1F5F9;
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --border: #334155;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #64748B; /* Tailwind muted */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #005B8F; /* Tailwind primary */
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #005B8F;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Botões primários - texto e ícones brancos no hover */
+button.bg-\[var\(--primary\)\]:hover,
+button.bg-\[var\(--primary\)\]:hover * {
+  color: white !important;
+}
+
+button.bg-\[var\(--primary\)\]:hover svg {
+  color: white !important;
+  stroke: white !important;
+}
