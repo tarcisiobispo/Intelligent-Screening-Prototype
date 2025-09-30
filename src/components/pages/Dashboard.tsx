@@ -31,6 +31,7 @@ import {
 
 import { mockApi } from '../../lib/mockApi';
 import { Alert, AlertDescription } from '../ui/alert';
+import { navigate } from '../../lib/navigation';
 
 export function Dashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -119,7 +120,7 @@ export function Dashboard() {
             variant="outline" 
             size="sm"
             className="gap-2"
-            onClick={() => window.location.href = '/upload'}
+            onClick={() => navigate('/upload')}
           >
             <Upload className="w-4 h-4" />
             <span className="hidden sm:inline">Upload</span>
@@ -127,7 +128,7 @@ export function Dashboard() {
           <Button 
             size="sm"
             className="gap-2 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
-            onClick={() => window.location.href = '/documents'}
+            onClick={() => navigate('/documents')}
           >
             <Eye className="w-4 h-4" />
             <span className="hidden sm:inline">Ver Documentos</span>
@@ -138,7 +139,7 @@ export function Dashboard() {
       {/* Alerts */}
       <Alert 
         className="border-l-4 border-l-[var(--danger)] bg-red-50 dark:bg-red-950/20 cursor-pointer hover:shadow-md transition-shadow"
-        onClick={() => window.location.href = '/documents/doc_001'}
+        onClick={() => navigate('/documents/doc_001')}
       >
         <AlertTriangle className="w-4 h-4 text-[var(--danger)]" />
         <AlertDescription className="text-[var(--text)]">
@@ -156,10 +157,13 @@ export function Dashboard() {
               key={kpi.title}
               className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
               onClick={() => {
-                if (kpi.title === 'Total de Documentos') window.location.href = '/documents';
-                else if (kpi.title === 'Pendentes de Revisão') window.location.href = '/documents';
-                else if (kpi.title === 'Alta Prioridade') window.location.href = '/tasks';
-                else if (kpi.title === 'Baixa Confiança OCR') window.location.href = '/documents';
+                let path = '';
+                if (kpi.title === 'Total de Documentos') path = '/documents';
+                else if (kpi.title === 'Pendentes de Revisão') path = '/documents';
+                else if (kpi.title === 'Alta Prioridade') path = '/tasks';
+                else if (kpi.title === 'Baixa Confiança OCR') path = '/documents';
+                
+                if (path) navigate(path);
               }}
             >
               <CardContent className="p-6">

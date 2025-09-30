@@ -14,11 +14,10 @@ import { Login } from './components/pages/Login';
 import { Monitoring } from './components/pages/Monitoring';
 import { Layout } from './components/Layout';
 import { Toaster } from './components/ui/sonner';
+import { toAbsolute, replace } from './lib/navigation';
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const BASE = (import.meta as any).env?.BASE_URL || '/';
-  const ORIGIN_BASE = window.location.origin + BASE;
-  const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), ORIGIN_BASE).pathname;
   const fromAbsolute = (absPath: string) => absPath.startsWith(BASE) ? '/' + absPath.slice(BASE.length) : absPath;
   const [currentPath, setCurrentPath] = useState(fromAbsolute(window.location.pathname));
   const [documentId, setDocumentId] = useState<string | null>(null);
@@ -40,7 +39,7 @@ function Router() {
     // Initial load
     updatePath();
 
-    // Handle browser back/forward
+    // Handle browser back/forward and programmatic navigation
     const handlePopState = () => {
       updatePath();
     };
@@ -58,20 +57,28 @@ function Router() {
       }
     };
 
+    // Custom event for programmatic navigation
+    const handleCustomNavigation = (e: CustomEvent) => {
+      const path = e.detail.path;
+      window.history.pushState({}, '', toAbsolute(path));
+      updatePath();
+    };
+
     window.addEventListener('popstate', handlePopState);
     document.addEventListener('click', handleClick);
+    window.addEventListener('navigate' as any, handleCustomNavigation);
     
     return () => {
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('click', handleClick);
+      window.removeEventListener('navigate' as any, handleCustomNavigation);
     };
   }, []);
 
   // Redirect authenticated users from / or /login to /dashboard
   useEffect(() => {
     if (isAuthenticated && (currentPath === '/' || currentPath === '/login')) {
-      window.history.replaceState({}, '', '/dashboard');
-      setCurrentPath('/dashboard');
+      replace('/dashboard');
     }
   }, [isAuthenticated, currentPath]);
 
@@ -160,6 +167,9 @@ function Router() {
         break;
       default:
         // Unknown route - redireciona para dashboard
+        if (effectivePath !== '/dashboard') {
+          replace('/dashboard');
+        }
         page = 'dashboard';
         component = <Dashboard />;
         breadcrumbs = [];

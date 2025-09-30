@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { Button } from './ui/button';
+import { navigate } from '../lib/navigation';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
@@ -171,7 +172,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && searchQuery) {
-                      window.location.href = withBase(`/documents?search=${encodeURIComponent(searchQuery)}`);
+                      navigate(`/documents?search=${encodeURIComponent(searchQuery)}`);
                     }
                   }}
                 />
@@ -182,7 +183,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
               {/* Mobile search */}
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => {
                 const query = prompt('Buscar:');
-                if (query) window.location.href = withBase(`/documents?search=${encodeURIComponent(query)}`);
+                if (query) navigate(`/documents?search=${encodeURIComponent(query)}`);
               }}>
                 <Search className="w-5 h-5" />
               </Button>
@@ -247,7 +248,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                     )}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="justify-center text-[var(--primary)] cursor-pointer" onClick={() => window.location.href = withBase('/notifications')}>
+                  <DropdownMenuItem className="justify-center text-[var(--primary)] cursor-pointer" onClick={() => navigate('/notifications')}>
                     Ver todas as notificações
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -266,7 +267,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => toast.info('Perfil', { description: 'Recurso em desenvolvimento' })}>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = withBase('/admin')}>Configurações</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>Configurações</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-[var(--danger)]" onClick={() => {
                     if (confirm('Deseja realmente sair?')) {
