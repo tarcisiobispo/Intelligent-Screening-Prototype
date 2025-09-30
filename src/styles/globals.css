@@ -253,11 +253,28 @@
 
 /* Botões primários - texto e ícones brancos no hover */
 button.bg-\[var\(--primary\)\]:hover,
-button.bg-\[var\(--primary\)\]:hover * {
+button.bg-\[var\(--primary\)\]:hover *,
+button.hover\:bg-\[var\(--primary-700\)\]:hover,
+button.hover\:bg-\[var\(--primary-700\)\]:hover *,
+button.hover\:bg-primary\/90:hover,
+button.hover\:bg-primary\/90:hover *,
+button.hover\:bg-\[var\(--accent\)\]:hover,
+button.hover\:bg-\[var\(--accent\)\]:hover * {
   color: white !important;
 }
 
-button.bg-\[var\(--primary\)\]:hover svg {
+button.bg-\[var\(--primary\)\]:hover svg,
+button.hover\:bg-\[var\(--primary-700\)\]:hover svg,
+button.hover\:bg-primary\/90:hover svg,
+button.hover\:bg-\[var\(--accent\)\]:hover svg {
   color: white !important;
   stroke: white !important;
+}
+
+/* Garantir que todos os elementos dentro de botões com hover laranja fiquem brancos */
+.hover\:bg-\[var\(--accent\)\]:hover .text-\[var\(--primary\)\],
+.hover\:bg-\[var\(--accent\)\]:hover .text-\[var\(--muted\)\],
+.hover\:bg-\[var\(--accent\)\]:hover .font-medium,
+.hover\:bg-\[var\(--accent\)\]:hover .text-xs {
+  color: white !important;
 }

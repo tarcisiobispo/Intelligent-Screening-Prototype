@@ -140,11 +140,14 @@ export function Help() {
                 </div>
               </div>
             </Button>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-              <Mail className="w-6 h-6 text-[var(--primary)]" />
+            <Button 
+              variant="outline" 
+              className="h-auto py-4 flex-col gap-2 hover:bg-[#FF8A00] hover:border-[#FF8A00] hover:text-white group"
+            >
+              <Mail className="w-6 h-6 text-[var(--primary)] group-hover:text-white" />
               <div>
-                <div className="font-medium">Email</div>
-                <div className="text-xs text-[var(--muted)]">
+                <div className="font-medium group-hover:text-white">Email</div>
+                <div className="text-xs text-[var(--muted)] group-hover:text-white">
                   suporte@triagem.com
                 </div>
               </div>
