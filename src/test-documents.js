@@ -1,4 +1,4 @@
-import { mockApi } from '../lib/mockApi';
+import { mockApi } from '../lib/mockApi.js';
 
 export async function testDocumentsAPI() {
   console.log('Testing documents API...');
