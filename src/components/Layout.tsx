@@ -48,7 +48,8 @@ type LayoutProps = {
 
 // Itens do menu lateral
 const BASE = (import.meta as any).env?.BASE_URL || '/';
-const withBase = (p: string) => new URL(p.replace(/^\//, ''), BASE).pathname;
+const ORIGIN_BASE = (typeof window !== 'undefined' ? window.location.origin : '') + BASE;
+const withBase = (p: string) => new URL(p.replace(/^\//, ''), ORIGIN_BASE).pathname;
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', path: withBase('/dashboard'), icon: LayoutDashboard },
   { id: 'documents', label: 'Documentos', path: withBase('/documents'), icon: FileText },

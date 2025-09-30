@@ -19,7 +19,8 @@ import { Toaster } from './components/ui/sonner';
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const BASE = (import.meta as any).env?.BASE_URL || '/';
-  const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), window.location.origin + BASE).pathname;
+  const ORIGIN_BASE = window.location.origin + BASE;
+  const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), ORIGIN_BASE).pathname;
   const fromAbsolute = (absPath: string) => absPath.startsWith(BASE) ? '/' + absPath.slice(BASE.length) : absPath;
   const [currentPath, setCurrentPath] = useState(fromAbsolute(window.location.pathname));
   const [documentId, setDocumentId] = useState<string | null>(null);
