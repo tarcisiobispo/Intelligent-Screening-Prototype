@@ -18,13 +18,16 @@ import { Toaster } from './components/ui/sonner';
 // Simple client-side router
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const BASE = (import.meta as any).env?.BASE_URL || '/';
+  const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), window.location.origin + BASE).pathname;
+  const fromAbsolute = (absPath: string) => absPath.startsWith(BASE) ? '/' + absPath.slice(BASE.length) : absPath;
+  const [currentPath, setCurrentPath] = useState(fromAbsolute(window.location.pathname));
   const [documentId, setDocumentId] = useState<string | null>(null);
 
   // Single useEffect to handle all path updates
   useEffect(() => {
     const updatePath = () => {
-      const path = window.location.pathname;
+      const path = fromAbsolute(window.location.pathname);
       setCurrentPath(path);
 
       const docMatch = path.match(/^\/documents\/(.+)$/);
@@ -51,7 +54,7 @@ function Router() {
       if (link && link.href && link.origin === window.location.origin) {
         e.preventDefault();
         const newPath = link.pathname;
-        window.history.pushState({}, '', newPath);
+        window.history.pushState({}, '', toAbsolute(newPath));
         updatePath();
       }
     };

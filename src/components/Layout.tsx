@@ -47,15 +47,17 @@ type LayoutProps = {
 };
 
 // Itens do menu lateral
+const BASE = (import.meta as any).env?.BASE_URL || '/';
+const withBase = (p: string) => new URL(p.replace(/^\//, ''), BASE).pathname;
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { id: 'documents', label: 'Documentos', path: '/documents', icon: FileText },
-  { id: 'upload', label: 'Upload', path: '/upload', icon: Upload },
-  { id: 'tasks', label: 'Tarefas', path: '/tasks', icon: CheckSquare },
-  { id: 'monitoring', label: 'Monitoramento', path: '/monitoring', icon: Activity },
-  { id: 'logs', label: 'Logs', path: '/logs', icon: FileCode },
-  { id: 'admin', label: 'Admin', path: '/admin', icon: Settings },
-  { id: 'help', label: 'Ajuda', path: '/help', icon: HelpCircle },
+  { id: 'dashboard', label: 'Dashboard', path: withBase('/dashboard'), icon: LayoutDashboard },
+  { id: 'documents', label: 'Documentos', path: withBase('/documents'), icon: FileText },
+  { id: 'upload', label: 'Upload', path: withBase('/upload'), icon: Upload },
+  { id: 'tasks', label: 'Tarefas', path: withBase('/tasks'), icon: CheckSquare },
+  { id: 'monitoring', label: 'Monitoramento', path: withBase('/monitoring'), icon: Activity },
+  { id: 'logs', label: 'Logs', path: withBase('/logs'), icon: FileCode },
+  { id: 'admin', label: 'Admin', path: withBase('/admin'), icon: Settings },
+  { id: 'help', label: 'Ajuda', path: withBase('/help'), icon: HelpCircle },
 ];
 
 export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps) {
@@ -168,7 +170,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && searchQuery) {
-                      window.location.href = `/documents?search=${encodeURIComponent(searchQuery)}`;
+                      window.location.href = withBase(`/documents?search=${encodeURIComponent(searchQuery)}`);
                     }
                   }}
                 />
@@ -179,7 +181,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
               {/* Mobile search */}
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => {
                 const query = prompt('Buscar:');
-                if (query) window.location.href = `/documents?search=${encodeURIComponent(query)}`;
+                if (query) window.location.href = withBase(`/documents?search=${encodeURIComponent(query)}`);
               }}>
                 <Search className="w-5 h-5" />
               </Button>
@@ -244,7 +246,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                     )}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="justify-center text-[var(--primary)] cursor-pointer" onClick={() => window.location.href = '/notifications'}>
+                  <DropdownMenuItem className="justify-center text-[var(--primary)] cursor-pointer" onClick={() => window.location.href = withBase('/notifications')}>
                     Ver todas as notificações
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -263,7 +265,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => toast.info('Perfil', { description: 'Recurso em desenvolvimento' })}>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = '/admin'}>Configurações</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = withBase('/admin')}>Configurações</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-[var(--danger)]" onClick={() => {
                     if (confirm('Deseja realmente sair?')) {
@@ -282,7 +284,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/">
+                  <BreadcrumbLink href={withBase('/')}>
                     <Home className="w-4 h-4" />
                   </BreadcrumbLink>
                 </BreadcrumbItem>
