@@ -298,7 +298,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                       {index === breadcrumbs.length - 1 || !crumb.href ? (
                         <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+                        <BreadcrumbLink href={withBase(crumb.href)}>{crumb.label}</BreadcrumbLink>
                       )}
                     </BreadcrumbItem>
                   </div>

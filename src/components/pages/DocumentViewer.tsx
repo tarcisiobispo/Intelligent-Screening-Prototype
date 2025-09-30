@@ -89,6 +89,15 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
   const [aiInsights, setAiInsights] = useState<AIInsight[]>([]);
   const [selectedTab, setSelectedTab] = useState('overview');
 
+  // Custom navigation handler to work with App.tsx's router
+  const handleNavigate = (path: string) => {
+    const BASE = (import.meta as any).env?.BASE_URL || '/';
+    const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), window.location.origin + BASE).pathname;
+    
+    window.history.pushState({}, '', toAbsolute(path));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
   useEffect(() => {
     loadDocument();
   }, [documentId]);
@@ -234,7 +243,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
         description: 'A tarefa foi atribuída e aparecerá na lista de tarefas',
         action: {
           label: 'Ver Tarefa',
-          onClick: () => (window.location.href = '/tasks'),
+          onClick: () => handleNavigate('/tasks'),
         },
         duration: 5000,
       });
@@ -332,7 +341,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
         <p className="text-[var(--muted)] mb-4">
           O documento que você está procurando não existe ou foi removido.
         </p>
-        <Button onClick={() => (window.location.href = '/documents')}>
+        <Button onClick={() => handleNavigate('/documents')}>
           Voltar para Inbox
         </Button>
       </div>
@@ -347,7 +356,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => (window.location.href = '/documents')}
+            onClick={() => handleNavigate('/documents')}
             aria-label="Voltar para documentos"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -735,7 +744,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                     <Button
                       variant="outline"
                       className="justify-start gap-2"
-                      onClick={() => window.location.href = '/monitoring'}
+                      onClick={() => handleNavigate('/monitoring')}
                     >
                       <Activity className="w-4 h-4" />
                       Monitorar
