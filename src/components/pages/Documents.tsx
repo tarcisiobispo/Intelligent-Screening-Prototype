@@ -43,6 +43,15 @@ export function Documents() {
     { id: '3', name: 'Pendentes', filters: { status: 'pending' } },
   ]);
 
+  // Custom navigation handler to work with App.tsx's router
+  const handleNavigate = (path: string) => {
+    const BASE = (import.meta as any).env?.BASE_URL || '/';
+    const toAbsolute = (p: string) => new URL(p.replace(/^\//, ''), window.location.origin + BASE).pathname;
+    
+    window.history.pushState({}, '', toAbsolute(path));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
   useEffect(() => {
     loadDocuments();
   }, [searchQuery, typeFilter, scoreFilter]);
@@ -223,7 +232,7 @@ export function Documents() {
               <Card
                 key={doc.id}
                 className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-                onClick={() => (window.location.href = `/documents/${doc.id}`)}
+                onClick={() => handleNavigate(`/documents/${doc.id}`)}
               >
                 <CardContent className="pt-6">
                   <div className="space-y-3">
@@ -296,7 +305,7 @@ export function Documents() {
                         className="gap-2 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
                         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                           e.stopPropagation();
-                          window.location.href = `/documents/${doc.id}`;
+                          handleNavigate(`/documents/${doc.id}`);
                         }}
                       >
                         <Eye className="w-4 h-4" />
