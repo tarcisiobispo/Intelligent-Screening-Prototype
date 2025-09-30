@@ -47,8 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_token');
-    // Force navigation to login page
-    window.location.href = '/login';
+    // Force navigation to login page (respect base URL for GitHub Pages)
+    const BASE = (import.meta as any).env?.BASE_URL || '/';
+    const loginPath = new URL('login', window.location.origin + BASE).pathname;
+    window.location.href = loginPath;
   };
 
   return (
