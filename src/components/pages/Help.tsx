@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -131,7 +132,7 @@ export function Help() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+            <Button variant="outline" className="h-auto py-4 flex-col gap-2 hover:bg-transparent hover:border-[var(--border)] hover:text-inherit">
               <MessageCircle className="w-6 h-6 text-[var(--primary)]" />
               <div>
                 <div className="font-medium">Chat ao Vivo</div>
