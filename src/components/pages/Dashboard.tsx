@@ -165,7 +165,7 @@ export function Dashboard() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
+                    <p className="text-text-2xl font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
                       {kpi.title}
                     </p>
                     <div className="flex items-baseline gap-2 mb-2">
