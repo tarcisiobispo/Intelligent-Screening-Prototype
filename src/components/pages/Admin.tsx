@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
+import { Checkbox } from '../ui/checkbox';
 import { Settings, Users, Key, Bell, Shield } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
@@ -42,23 +42,23 @@ export function Admin() {
                   Documentos abaixo deste valor serão marcados para revisão
                 </p>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="notifications" defaultChecked />
                 <div>
-                  <Label>Notificações de Alta Prioridade</Label>
+                  <Label htmlFor="notifications">Notificações de Alta Prioridade</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Enviar alertas imediatos para docs com score &gt; 70%
                   </p>
                 </div>
-                <Switch defaultChecked />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="auto-processing" defaultChecked />
                 <div>
-                  <Label>Processamento Automático</Label>
+                  <Label htmlFor="auto-processing">Processamento Automático</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Iniciar OCR automaticamente após upload
                   </p>
                 </div>
-                <Switch defaultChecked />
               </div>
               <Button className="bg-[var(--primary)] hover:bg-[var(--primary-700)]">
                 Salvar Configurações
@@ -157,23 +157,23 @@ export function Admin() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="2fa" defaultChecked />
                 <div>
-                  <Label>Autenticação de Dois Fatores</Label>
+                  <Label htmlFor="2fa">Autenticação de Dois Fatores</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Requer 2FA para todos os usuários
                   </p>
                 </div>
-                <Switch defaultChecked />
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Checkbox id="audit-logs" defaultChecked />
                 <div>
-                  <Label>Logs de Auditoria</Label>
+                  <Label htmlFor="audit-logs">Logs de Auditoria</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Registrar todas as ações do sistema
                   </p>
                 </div>
-                <Switch defaultChecked />
               </div>
               <div className="flex items-center justify-between">
                 <div>

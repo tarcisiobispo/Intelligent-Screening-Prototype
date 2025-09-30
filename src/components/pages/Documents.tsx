@@ -225,8 +225,7 @@ export function Documents() {
             return (
               <Card
                 key={doc.id}
-                className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
-                onClick={() => navigate(`/documents/${doc.id}`)}
+                className="hover:shadow-lg transition-shadow duration-200"
               >
                 <CardContent className="pt-6">
                   <div className="space-y-3">
@@ -297,10 +296,7 @@ export function Documents() {
                       <Button
                         size="sm"
                         className="gap-2 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
-                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                          e.stopPropagation();
-                          navigate(`/documents/${doc.id}`);
-                        }}
+                        onClick={() => navigate(`/documents/${doc.id}`)}
                       >
                         <Eye className="w-4 h-4" />
                         Revisar

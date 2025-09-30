@@ -18,6 +18,7 @@ import {
   Filter,
 } from 'lucide-react';
 import { mockApi, type Task } from '../../lib/mockApi';
+import { navigate } from '../../lib/navigation';
 
 export function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -272,7 +273,7 @@ function TaskCard({ task }: { task: Task }) {
             variant="outline"
             size="sm"
             className="w-full gap-2"
-            onClick={() => (window.location.href = `/documents/${task.documentId}`)}
+            onClick={() => navigate(`/documents/${task.documentId}`)}
           >
             <ExternalLink className="w-4 h-4" />
             Ver Documento
