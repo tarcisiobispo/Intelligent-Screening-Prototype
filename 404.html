@@ -2,27 +2,36 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Redirecting...</title>
+    <title>Intelligent Screening Prototype</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
-    <noscript>
-      <p>Habilite JavaScript para usar este aplicativo.</p>
-      <a href="/Intelligent-Screening-Prototype/">Voltar ao início</a>
-    </noscript>
     <script>
+      // Single Page Application fallback for GitHub Pages
       (function() {
         var base = '/Intelligent-Screening-Prototype/';
         var l = window.location;
+
+        // If we're not on the base path, redirect to it
         if (!l.pathname.startsWith(base)) {
-          l.replace(base);
+          var newPath = base + l.pathname.slice(1) + l.search + l.hash;
+          l.replace(newPath);
           return;
         }
+
+        // For SPA routing, redirect to index.html with the current path
         var relative = '/' + l.pathname.slice(base.length) + l.search + l.hash;
-        sessionStorage.setItem('gh:redirect', relative);
+        if (relative !== '/' && !relative.startsWith('/assets/')) {
+          sessionStorage.setItem('gh:redirect', relative);
+        }
+
+        // Redirect to the main index.html
         l.replace(base);
       })();
     </script>
+  </head>
+  <body>
+    <noscript>
+      <p>JavaScript é necessário para usar este aplicativo.</p>
+      <a href="/Intelligent-Screening-Prototype/">Voltar ao início</a>
+    </noscript>
   </body>
-  </html>
-
+</html>
