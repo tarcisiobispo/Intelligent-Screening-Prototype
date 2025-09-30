@@ -148,7 +148,7 @@ export function Dashboard() {
       </Alert>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         {kpiCards.map((kpi) => {
           const Icon = kpi.icon;
           return (
@@ -162,14 +162,14 @@ export function Dashboard() {
                 else if (kpi.title === 'Baixa Confiança OCR') window.location.href = '/documents';
               }}
             >
-              <CardContent className="p-6">
+              <CardContent className="p-7">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
+                    <p className="text-sm font-medium text-[var(--muted)] uppercase tracking-wide mb-3">
                       {kpi.title}
                     </p>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-3xl font-bold text-[var(--text)]">{kpi.value}</span>
+                    <div className="flex items-baseline gap-2 mb-1.5">
+                      <span className="text-4xl font-bold text-[var(--text)]">{kpi.value}</span>
                     </div>
                     {kpi.trend && (
                       <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium">
@@ -194,17 +194,17 @@ export function Dashboard() {
                       <Button
                         variant="link"
                         size="sm"
-                        className="mt-2 p-0 h-auto text-xs text-[var(--primary)] hover:text-[var(--primary-700)] font-medium"
+                        className="mt-2 p-0 h-auto text-sm text-[var(--primary)] hover:text-[var(--primary-700)] font-medium"
                       >
                         {kpi.action} <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     )}
                   </div>
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${kpi.color}10` }}
                   >
-                    <Icon className="w-6 h-6" style={{ color: kpi.color }} />
+                    <Icon className="w-7 h-7" style={{ color: kpi.color }} />
                   </div>
                 </div>
               </CardContent>
