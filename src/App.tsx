@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './lib/theme';
 import { AuthProvider, useAuth } from './lib/auth';
-import { Layout } from './components/Layout';
 import { Dashboard } from './components/pages/Dashboard';
 import { Upload } from './components/pages/Upload';
 import { Documents } from './components/pages/Documents';
 import { DocumentViewer } from './components/pages/DocumentViewer';
 import { Tasks } from './components/pages/Tasks';
-import { Monitoring } from './components/pages/Monitoring';
+import { Notifications } from './components/pages/Notifications';
 import { Admin } from './components/pages/Admin';
 import { Help } from './components/pages/Help';
 import { Logs } from './components/pages/Logs';
-import { Notifications } from './components/pages/Notifications';
 import { Login } from './components/pages/Login';
+import { Monitoring } from './components/pages/Monitoring';
+import { Layout } from './components/Layout';
 import { Toaster } from './components/ui/sonner';
-
-// Simple client-side router
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const BASE = (import.meta as any).env?.BASE_URL || '/';

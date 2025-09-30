@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -31,9 +31,9 @@ import {
 } from '../ui/dropdown-menu';
 
 export function Documents() {
-  console.log('Documents component rendering...');
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
@@ -44,14 +44,12 @@ export function Documents() {
   ]);
 
   useEffect(() => {
-    console.log('Documents component mounted, loading documents...');
     loadDocuments();
   }, [searchQuery, typeFilter, scoreFilter]);
 
   const loadDocuments = async () => {
     setLoading(true);
     try {
-      console.log('Loading documents...');
       const filters: any = {};
 
       if (searchQuery) filters.search = searchQuery;
@@ -63,9 +61,7 @@ export function Documents() {
       }
       if (scoreFilter === 'low') filters.maxScore = 0.3;
 
-      console.log('Filters:', filters);
       const docs = await mockApi.getDocuments(filters);
-      console.log('Documents loaded:', docs.length, docs);
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
