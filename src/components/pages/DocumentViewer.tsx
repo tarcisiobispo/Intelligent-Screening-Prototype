@@ -418,15 +418,15 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                 <span className="hidden sm:inline">Criar Tarefa</span>
               </Button>
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-              <SheetHeader>
+            <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-6">
+              <SheetHeader className="space-y-2">
                 <SheetTitle>Criar Tarefa</SheetTitle>
                 <SheetDescription>
                   Criar tarefa vinculada a este documento
                 </SheetDescription>
               </SheetHeader>
-              <div className="space-y-4 mt-6">
-                <div>
+              <div className="space-y-6 mt-6">
+                <div className="space-y-2">
                   <Label htmlFor="task-title">Título</Label>
                   <Input
                     id="task-title"
@@ -437,7 +437,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                   />
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="task-description">Descrição</Label>
                   <Textarea
                     id="task-description"
@@ -447,12 +447,12 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                     }
                     rows={4}
                   />
-                  <p className="text-xs text-[var(--muted)] mt-1">
+                  <p className="text-xs text-[var(--muted)]">
                     Contexto do documento incluído automaticamente
                   </p>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="task-assignee">Responsável</Label>
                   <Select
                     value={taskForm.assignee}
@@ -471,7 +471,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                   </Select>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="task-priority">Prioridade</Label>
                   <Select
                     value={taskForm.priority}
@@ -488,12 +488,12 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                       <SelectItem value="low">Baixa</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-[var(--muted)] mt-1">
+                  <p className="text-xs text-[var(--muted)]">
                     Sugerida automaticamente com base no score de risco
                   </p>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="task-due">Data de vencimento</Label>
                   <Input
                     id="task-due"
@@ -505,7 +505,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                   />
                 </div>
 
-                <div className="flex gap-2 pt-4">
+                <div className="flex gap-3 pt-4">
                   <Button
                     onClick={handleCreateTask}
                     className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-700)]"

@@ -30,30 +30,30 @@ export function Admin() {
                 Configurações Gerais
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
                 <Label htmlFor="org-name">Nome da Organização</Label>
                 <Input id="org-name" defaultValue="Energia & Infra" />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="ocr-threshold">Limite de Confiança OCR (%)</Label>
                 <Input id="ocr-threshold" type="number" defaultValue="70" />
-                <p className="text-xs text-[var(--muted)] mt-1">
+                <p className="text-xs text-[var(--muted)]">
                   Documentos abaixo deste valor serão marcados para revisão
                 </p>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="notifications" defaultChecked />
-                <div>
+              <div className="flex items-start gap-4">
+                <Checkbox id="notifications" defaultChecked className="mt-1" />
+                <div className="space-y-1">
                   <Label htmlFor="notifications">Notificações de Alta Prioridade</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Enviar alertas imediatos para docs com score &gt; 70%
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="auto-processing" defaultChecked />
-                <div>
+              <div className="flex items-start gap-4">
+                <Checkbox id="auto-processing" defaultChecked className="mt-1" />
+                <div className="space-y-1">
                   <Label htmlFor="auto-processing">Processamento Automático</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Iniciar OCR automaticamente após upload
@@ -156,33 +156,31 @@ export function Admin() {
                 Segurança
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="2fa" defaultChecked />
-                <div>
+            <CardContent className="space-y-6">
+              <div className="flex items-start gap-4">
+                <Checkbox id="2fa" defaultChecked className="mt-1" />
+                <div className="space-y-1">
                   <Label htmlFor="2fa">Autenticação de Dois Fatores</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Requer 2FA para todos os usuários
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="audit-logs" defaultChecked />
-                <div>
+              <div className="flex items-start gap-4">
+                <Checkbox id="audit-logs" defaultChecked className="mt-1" />
+                <div className="space-y-1">
                   <Label htmlFor="audit-logs">Logs de Auditoria</Label>
                   <p className="text-xs text-[var(--muted)]">
                     Registrar todas as ações do sistema
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Expiração de Sessão</Label>
-                  <p className="text-xs text-[var(--muted)]">
-                    Tempo de inatividade antes do logout
-                  </p>
-                </div>
-                <Input type="number" defaultValue="30" className="w-24" />
+              <div className="space-y-2">
+                <Label htmlFor="session-timeout">Expiração de Sessão (minutos)</Label>
+                <Input id="session-timeout" type="number" defaultValue="30" className="w-24" />
+                <p className="text-xs text-[var(--muted)]">
+                  Tempo de inatividade antes do logout
+                </p>
               </div>
               <Button className="bg-[var(--primary)] hover:bg-[var(--primary-700)]">
                 Salvar Configurações
