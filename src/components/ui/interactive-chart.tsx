@@ -146,22 +146,22 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
             })}
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-lg font-bold">{total.toLocaleString()}</div>
-              <div className="text-xs text-[var(--muted)]">Total</div>
+            <div className="text-center bg-white/20 backdrop-blur-sm rounded-full px-3 py-2">
+              <div className="text-lg font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{total.toLocaleString()}</div>
+              <div className="text-xs text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Total</div>
             </div>
           </div>
         </div>
         <div className="space-y-2 flex-1 max-h-[200px] overflow-y-auto">
           {currentData.map((point, index) => (
-            <div key={index} className="flex items-center gap-2 text-sm p-1 rounded hover:bg-[var(--accent)] cursor-pointer transition-colors" onClick={() => handleClick(point, index)}>
+            <div key={index} className="flex items-center gap-2 text-sm p-1 rounded hover:bg-[var(--accent)]/50 cursor-pointer transition-colors" onClick={() => handleClick(point, index)}>
               <div 
                 className="w-3 h-3 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: point.color }}
               />
-              <span className="flex-1 truncate">{point.label}</span>
+              <span className="flex-1 truncate text-[var(--foreground)]">{point.label}</span>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="font-medium font-mono text-xs">{point.value.toLocaleString()}</span>
+                <span className="font-medium font-mono text-xs text-[var(--foreground)]">{point.value.toLocaleString()}</span>
                 <span className="text-[var(--muted)] text-xs min-w-[40px] text-right">
                   {Math.round((point.value / total) * 100)}%
                 </span>
