@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './lib/theme';
 import { AuthProvider, useAuth } from './lib/auth';
+import { ToastProvider } from './components/ui/toast-provider';
 import { Dashboard } from './components/pages/Dashboard';
 import { Upload } from './components/pages/Upload';
 import { Documents } from './components/pages/Documents';
@@ -180,6 +181,7 @@ function Router() {
   return (
     <Layout currentPage={page} breadcrumbs={breadcrumbs}>
       {component}
+      <Toaster />
     </Layout>
   );
 }
@@ -188,8 +190,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router />
-        <Toaster position="top-right" />
+        <ToastProvider>
+          <Router />
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

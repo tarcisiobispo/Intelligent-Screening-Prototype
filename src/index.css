@@ -3444,3 +3444,9 @@ html {
     height: 0;
   }
 }
+
+/* Remove date picker icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}

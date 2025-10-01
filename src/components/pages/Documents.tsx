@@ -3,6 +3,14 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+import { ErrorState } from '../ui/error-state';
+import { DocumentCardSkeleton } from '../ui/loading-skeletons';
+import { toast } from 'sonner';
+import { SmartSearch } from '../ui/smart-search';
+import { CreateTaskSidebar } from '../ui/create-task-sidebar';
+import { performSemanticSearch } from '../../lib/semanticSearch';
+import { exportToExcel, exportToPDF, sendWebhook } from '../../lib/export';
+
 import {
   Select,
   SelectContent,
@@ -20,6 +28,12 @@ import {
   Star,
   Bookmark,
   Plus,
+  User,
+  Download,
+  FileSpreadsheet,
+  Send,
+  Calendar,
+  Upload,
 } from 'lucide-react';
 import { mockApi, type Document } from '../../lib/mockApi';
 import { navigate } from '../../lib/navigation';
@@ -39,6 +53,14 @@ export function Documents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('todos');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showCreateTaskSidebar, setShowCreateTaskSidebar] = useState(false);
+  const [selectedDocForTask, setSelectedDocForTask] = useState<Document | null>(null);
+  // Using sonner toast
   const [savedFilters] = useState([
     { id: '1', name: 'Alta Prioridade', filters: { minScore: 0.7 } },
     { id: '2', name: 'Baixa Confiança OCR', filters: { maxOcrConfidence: 0.7 } },
@@ -49,10 +71,11 @@ export function Documents() {
 
   useEffect(() => {
     loadDocuments();
-  }, [searchQuery, typeFilter, scoreFilter]);
+  }, [searchQuery, typeFilter, scoreFilter, assigneeFilter, startDate, endDate]);
 
   const loadDocuments = async () => {
     setLoading(true);
+    setError(null);
     try {
       const filters: any = {};
 
@@ -65,10 +88,22 @@ export function Documents() {
       }
       if (scoreFilter === 'low') filters.maxScore = 0.3;
 
-      const docs = await mockApi.getDocuments(filters);
+      // Apply advanced filters
+      if (startDate) filters.startDate = startDate;
+      if (endDate) filters.endDate = endDate;
+      if (assigneeFilter && assigneeFilter !== 'todos') filters.assignee = assigneeFilter;
+
+      let docs = await mockApi.getDocuments(filters);
+      
+      // Apply semantic search if query exists
+      if (searchQuery.trim()) {
+        docs = performSemanticSearch(searchQuery, docs);
+      }
+      
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
+      setError('Erro ao carregar documentos. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
@@ -109,6 +144,51 @@ export function Documents() {
     return 'Baixa';
   };
 
+  const handleSelectDoc = (docId: string) => {
+    setSelectedDocs(prev => 
+      prev.includes(docId) 
+        ? prev.filter(id => id !== docId)
+        : [...prev, docId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedDocs(selectedDocs.length === documents.length ? [] : documents.map(d => d.id));
+  };
+
+  const handleBulkCreateTasks = () => {
+    console.log('Clicou em bulk create tasks');
+    // Para bulk actions, abre sidebar sem documento específico
+    setSelectedDocForTask(null);
+    setShowCreateTaskSidebar(true);
+  };
+
+  const handleBulkArchive = async () => {
+    const loadingId = toast.loading('Arquivando...', `Processando ${selectedDocs.length} documentos`);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast.dismiss(loadingId);
+      toast.success('Documentos arquivados!', `${selectedDocs.length} documentos foram arquivados`);
+      setSelectedDocs([]);
+    } catch (error) {
+      toast.dismiss(loadingId);
+      toast.error('Erro ao arquivar', 'Tente novamente');
+    }
+  };
+
+  const handleBulkReprocess = async () => {
+    const loadingId = toast.loading('Reprocessando...', `OCR sendo executado em ${selectedDocs.length} documentos`);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      toast.dismiss(loadingId);
+      toast.success('Reprocessamento concluído!', `${selectedDocs.length} documentos foram reprocessados`);
+      setSelectedDocs([]);
+    } catch (error) {
+      toast.dismiss(loadingId);
+      toast.error('Erro ao reprocessar', 'Tente novamente');
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Header */}
@@ -116,81 +196,214 @@ export function Documents() {
         <div>
           <h1 className="mb-2">Inbox de Documentos</h1>
           <p className="text-[var(--muted)]">
-            {documents.length} documentos • Ordenados por score
+            {documents.length} documentos
+            {searchQuery && ` • Resultados para "${searchQuery}"`}
+            {!searchQuery && ` • Ordenados por score`}
           </p>
         </div>
+        
+        {/* Export Actions */}
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => {
+                exportToExcel(documents, 'documentos');
+                toast.success('Export realizado!', {
+                  description: 'Arquivo Excel baixado com sucesso'
+                });
+              }}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel (.csv)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                exportToPDF(documents, 'documentos');
+                toast.success('Export realizado!', {
+                  description: 'Arquivo PDF baixado com sucesso'
+                });
+              }}>
+                <FileText className="w-4 h-4 mr-2" />
+                PDF (.html)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={async () => {
+              const loadingToast = toast.loading('Enviando webhook...');
+              
+              try {
+                const result = await sendWebhook('documents_export', {
+                  count: documents.length,
+                  filters: { searchQuery, typeFilter, scoreFilter, assigneeFilter }
+                });
+                
+                toast.dismiss(loadingToast);
+                
+                if (result.success) {
+                  toast.success('Webhook enviado!', {
+                    description: result.message
+                  });
+                } else {
+                  toast.error('Erro no webhook', {
+                    description: result.message
+                  });
+                }
+              } catch (error) {
+                toast.dismiss(loadingToast);
+                toast.error('Falha ao enviar webhook');
+              }
+            }}
+          >
+            <Send className="w-4 h-4" />
+            Webhook
+          </Button>
+        </div>
       </div>
+
+      {/* Bulk Actions Bar */}
+      {selectedDocs.length > 0 && (
+        <Card className="bg-[var(--primary)]/5 border-[var(--primary)]">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">
+                  {selectedDocs.length} documento{selectedDocs.length > 1 ? 's' : ''} selecionado{selectedDocs.length > 1 ? 's' : ''}
+                </span>
+                <Button variant="outline" size="sm" onClick={() => setSelectedDocs([])}>
+                  Limpar seleção
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleBulkCreateTasks} className="gap-1">
+                  <Plus className="w-4 h-4" />
+                  Criar Tarefas
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleBulkReprocess} className="gap-1">
+                  <ArrowUpDown className="w-4 h-4" />
+                  Reprocessar
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleBulkArchive} className="gap-1">
+                  <FileText className="w-4 h-4" />
+                  Arquivar
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters Bar */}
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
-              <Input
-                placeholder="Busca semântica: equipamento, risco, temperatura..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            {/* Smart Search */}
+            <SmartSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Busca inteligente: equipamento, risco, temperatura..."
+            />
 
             {/* Filter Controls */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="Relatório">Relatório</SelectItem>
-                  <SelectItem value="Laudo">Laudo</SelectItem>
-                  <SelectItem value="Nota Fiscal">Nota Fiscal</SelectItem>
-                  <SelectItem value="Comunicação">Comunicação</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectedDocs.length === documents.length && documents.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-[var(--border)]"
+                />
+                <label className="text-sm font-medium">Selecionar todos</label>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <div className="space-y-1 w-36">
+                <label className="text-xs font-medium text-[var(--muted)]">Responsável</label>
+                <div className="relative">
+                  <Input
+                    value={assigneeFilter === 'todos' ? '' : assigneeFilter}
+                    onChange={(e) => setAssigneeFilter(e.target.value || 'todos')}
+                    placeholder="Nome do responsável"
+                    className="h-8 pl-8 text-sm"
+                  />
+                  <User className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
+                </div>
+              </div>
 
-              <Select value={scoreFilter} onValueChange={setScoreFilter}>
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <ArrowUpDown className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Score" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os scores</SelectItem>
-                  <SelectItem value="high">Alto (≥70%)</SelectItem>
-                  <SelectItem value="medium">Médio (30-70%)</SelectItem>
-                  <SelectItem value="low">Baixo (&lt;30%)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-1 w-32">
+                <label className="text-xs font-medium text-[var(--muted)]">Tipo</label>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger size="sm" className="text-sm">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="Relatório">Relatório</SelectItem>
+                    <SelectItem value="Laudo">Laudo</SelectItem>
+                    <SelectItem value="Nota Fiscal">Nota Fiscal</SelectItem>
+                    <SelectItem value="Comunicação">Comunicação</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Saved Filters */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Bookmark className="w-4 h-4" />
-                    Filtros Salvos
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Meus Filtros</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {savedFilters.map((filter) => (
-                    <DropdownMenuItem
-                      key={filter.id}
-                      onClick={() => applySavedFilter(filter.filters)}
-                    >
-                      <Star className="w-4 h-4 mr-2" />
-                      {filter.name}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <span className="text-[var(--primary)]">+ Salvar filtro atual</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="space-y-1 w-28">
+                <label className="text-xs font-medium text-[var(--muted)]">Score</label>
+                <Select value={scoreFilter} onValueChange={setScoreFilter}>
+                  <SelectTrigger size="sm" className="text-sm">
+                    <ArrowUpDown className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Score" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="high">Alto (≥70%)</SelectItem>
+                    <SelectItem value="medium">Médio (30-70%)</SelectItem>
+                    <SelectItem value="low">Baixo (&lt;30%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1 w-32">
+                <label className="text-xs font-medium text-[var(--muted)]">Data Inicial</label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="h-8 text-sm pl-8"
+                    style={{
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield'
+                    } as any}
+                  />
+                  <Calendar className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
+                </div>
+              </div>
+              
+              <div className="space-y-1 w-32">
+                <label className="text-xs font-medium text-[var(--muted)]">Data Final</label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-8 text-sm pl-8"
+                    style={{
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'textfield'
+                    } as any}
+                  />
+                  <Calendar className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -200,16 +413,15 @@ export function Documents() {
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  <div className="h-4 bg-[var(--bg)] rounded animate-pulse" />
-                  <div className="h-4 bg-[var(--bg)] rounded animate-pulse w-3/4" />
-                </div>
-              </CardContent>
-            </Card>
+            <DocumentCardSkeleton key={i} />
           ))}
         </div>
+      ) : error ? (
+        <ErrorState
+          title="Erro ao carregar documentos"
+          message={error}
+          onRetry={loadDocuments}
+        />
       ) : documents.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center py-12">
@@ -232,7 +444,14 @@ export function Documents() {
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
+                      <div className="flex items-start gap-3 flex-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedDocs.includes(doc.id)}
+                          onChange={() => handleSelectDoc(doc.id)}
+                          className="mt-1 rounded border-[var(--border)]"
+                        />
+                        <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="text-lg">{doc.title}</h3>
                           {isLowConfidence && (
@@ -258,15 +477,25 @@ export function Documents() {
                             OCR: {getConfidenceLabel(doc.ocr_confidence)} (
                             {(doc.ocr_confidence * 100).toFixed(0)}%)
                           </Badge>
-                          <span>
-                            {new Date(doc.uploadedAt).toLocaleDateString('pt-BR', {
+                          {searchQuery && (doc as any).searchScore && (
+                            <Badge variant="outline" className="gap-1">
+                              <Search className="w-3 h-3" />
+                              Relevância: {Math.round((doc as any).searchScore / 10)}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Evento: {doc.entities.date || '20/09/2025'}
+                          </Badge>
+                          <Badge variant="outline" className="gap-1">
+                            <Upload className="w-3 h-3" />
+                            Processado: {new Date(doc.uploadedAt).toLocaleDateString('pt-BR', {
                               day: '2-digit',
                               month: '2-digit',
                               year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
                             })}
-                          </span>
+                          </Badge>
+                        </div>
                         </div>
                       </div>
                     </div>
@@ -278,16 +507,7 @@ export function Documents() {
                       ))}
                     </div>
 
-                    {/* Entities */}
-                    {Object.keys(doc.entities).length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(doc.entities).map(([key, value]) => (
-                          <Badge key={key} variant="outline" className="text-xs">
-                            {key}: {value}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+
 
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
@@ -300,8 +520,8 @@ export function Documents() {
                           size="sm"
                           className="gap-2"
                           onClick={() => {
-                            // TODO: Abrir modal de criar tarefa
-                            console.log('Criar tarefa para:', doc.id);
+                            setSelectedDocForTask(doc);
+                            setShowCreateTaskSidebar(true);
                           }}
                         >
                           <Plus className="w-4 h-4" />
@@ -324,6 +544,18 @@ export function Documents() {
           })}
         </div>
       )}
+
+      {/* Create Task Sidebar */}
+      <CreateTaskSidebar
+        isOpen={showCreateTaskSidebar}
+        onClose={() => {
+          setShowCreateTaskSidebar(false);
+          setSelectedDocForTask(null);
+        }}
+        document={selectedDocForTask || undefined}
+        selectedDocsCount={selectedDocForTask ? undefined : selectedDocs.length}
+        onTaskCreated={selectedDocForTask ? undefined : () => setSelectedDocs([])}
+      />
     </div>
   );
 }

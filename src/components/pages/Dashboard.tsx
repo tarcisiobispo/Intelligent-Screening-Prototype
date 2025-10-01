@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { ErrorState } from '../ui/error-state';
+import { DashboardCardSkeleton, ChartSkeleton } from '../ui/loading-skeletons';
+import { InteractiveChart } from '../ui/interactive-chart';
 import {
   FileText,
   AlertTriangle,
@@ -11,6 +16,9 @@ import {
   Upload,
   Eye,
   ArrowRight,
+  Filter,
+  Calendar,
+  User,
 } from 'lucide-react';
 
 import {
@@ -32,17 +40,37 @@ import {
 import { mockApi } from '../../lib/mockApi';
 import { Alert, AlertDescription } from '../ui/alert';
 import { navigate } from '../../lib/navigation';
+import { getDashboardData, periodOptions, typeOptions, assigneeOptions, type DashboardFilters } from '../../lib/dashboardData';
+import { toast } from 'sonner';
 
 export function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [chartData, setChartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<DashboardFilters>({
+    period: '30d',
+    type: 'all',
+    assignee: 'todos',
+    startDate: '',
+    endDate: ''
+  });
+  const [dashboardData, setDashboardData] = useState<any>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (stats) {
+      const data = getDashboardData(filters);
+      setDashboardData(data);
+    }
+  }, [filters, stats]);
+
   const loadData = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const [statsData, chartsData] = await Promise.all([
         mockApi.getStats(),
@@ -50,24 +78,57 @@ export function Dashboard() {
       ]);
       setStats(statsData);
       setChartData(chartsData);
+      const data = getDashboardData(filters);
+      setDashboardData(data);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      setError('Erro ao carregar dados do dashboard.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDrillDown = (point: any) => {
+    toast.success('Drill-down ativado', {
+      description: `Explorando dados de: ${point.label}`
+    });
+  };
+
+  const applyFilters = () => {
+    if (stats) {
+      const data = getDashboardData(filters);
+      setDashboardData(data);
+      toast.success('Filtros aplicados', {
+        description: 'Dashboard atualizado com os novos filtros'
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-6 max-w-[1600px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="space-y-2">
-                <div className="h-4 bg-[var(--bg)] rounded animate-pulse" />
-                <div className="h-8 bg-[var(--bg)] rounded animate-pulse" />
-              </CardHeader>
-            </Card>
+            <DashboardCardSkeleton key={i} />
           ))}
         </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(2)].map((_, i) => (
+            <ChartSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-[1600px]">
+        <ErrorState
+          title="Erro no Dashboard"
+          message={error}
+          onRetry={loadData}
+        />
       </div>
     );
   }
@@ -108,11 +169,11 @@ export function Dashboard() {
   return (
     <div className="space-y-6 max-w-[1600px]">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">Dashboard Interativo</h1>
           <p className="text-sm text-[var(--muted)]">
-            Visão geral do sistema de triagem inteligente
+            Análise interativa com drill-down e filtros dinâmicos
           </p>
         </div>
         <div className="flex gap-2">
@@ -136,9 +197,44 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Resumo Geral do Sistema */}
+      <Card className="mb-6">
+        <CardHeader className="px-4 pt-2 pb-0">
+          <CardTitle className="text-base font-bold">Resumo Geral do Sistema</CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-2 pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[var(--primary)]">
+                {stats?.totalDocuments || 0}
+              </div>
+              <div className="text-sm text-[var(--muted)]">Total Documentos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[var(--primary)]">
+                {(stats?.totalDocuments || 0) - (stats?.pendingReview || 0)}
+              </div>
+              <div className="text-sm text-[var(--muted)]">Processados</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[var(--warning)]">
+                2.8min
+              </div>
+              <div className="text-sm text-[var(--muted)]">Tempo Médio</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[var(--success)]">
+                94%
+              </div>
+              <div className="text-sm text-[var(--muted)]">Taxa de Sucesso</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Alerts */}
       <Alert 
-        className="border-l-4 border-l-[var(--danger)] bg-red-50 dark:bg-red-950/20 cursor-pointer hover:shadow-md transition-shadow"
+        className="border-l-4 border-l-[var(--danger)] bg-red-50 dark:bg-red-950/20 cursor-pointer hover:shadow-md transition-shadow mb-6"
         onClick={() => navigate('/documents/doc_001')}
       >
         <AlertTriangle className="w-4 h-4 text-[var(--danger)]" />
@@ -234,111 +330,117 @@ export function Dashboard() {
         })}
       </div>
 
-      {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Documents by Day */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-[var(--text)]">Documentos por Dia</CardTitle>
-            <p className="text-xs text-[var(--muted)] mt-1">Últimos 7 dias</p>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData.documentsByDay}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis
-                  dataKey="date"
-                  stroke="var(--muted)"
-                  tick={{ fill: 'var(--muted)' }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${date.getDate()}/${date.getMonth() + 1}`;
-                  }}
-                />
-                <YAxis stroke="var(--muted)" tick={{ fill: 'var(--muted)' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="count"
-                  stroke="var(--primary)"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        {/* Pie Chart Example */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-[var(--text)]">Distribuição por Categoria</CardTitle>
-            <p className="text-xs text-[var(--muted)] mt-1">Últimos 7 dias</p>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData.categories}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="var(--primary)"
-                  label
-                >
-                  {chartData.categories.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Stats Footer */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                {stats.documentsToday}
-              </div>
-              <div className="text-sm text-[var(--muted)]">Docs hoje</div>
+
+      {/* Filtros */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+            <Filter className="w-5 h-5" />
+            Filtros do Dashboard
+          </CardTitle>
+          <p className="text-sm text-[var(--muted)]">
+            Use os filtros abaixo para personalizar os gráficos interativos. Clique em "Aplicar" para atualizar os dados.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <div className="space-y-1 w-36">
+              <label className="text-xs font-medium text-[var(--muted)]">Período</label>
+              <Select value={filters.period} onValueChange={(value: string) => setFilters({...filters, period: value})}>
+                <SelectTrigger size="sm">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {periodOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                {stats.avgProcessingTime}
-              </div>
-              <div className="text-sm text-[var(--muted)]">Tempo médio OCR</div>
+
+            <div className="space-y-1 w-36">
+              <label className="text-xs font-medium text-[var(--muted)]">Tipo</label>
+              <Select value={filters.type} onValueChange={(value: string) => setFilters({...filters, type: value})}>
+                <SelectTrigger size="sm">
+                  <FileText className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {typeOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">96.5%</div>
-              <div className="text-sm text-[var(--muted)]">Taxa de sucesso</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                {stats.tasksOpen}
+
+            <div className="space-y-1 w-36">
+              <label className="text-xs font-medium text-[var(--muted)]">Responsável</label>
+              <div className="relative">
+                <Input
+                  value={filters.assignee === 'todos' ? '' : filters.assignee}
+                  onChange={(e) => setFilters({...filters, assignee: e.target.value || 'todos'})}
+                  placeholder="Nome do responsável"
+                  className="h-8 pl-8 text-sm"
+                />
+                <User className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
               </div>
-              <div className="text-sm text-[var(--muted)]">Tarefas ativas</div>
+            </div>
+
+            <div className="space-y-1 w-24">
+              <label className="text-xs font-medium text-[var(--muted)]">&nbsp;</label>
+              <Button onClick={applyFilters} size="sm" className="gap-2 h-8 w-full">
+                <Filter className="w-4 h-4" />
+                Aplicar
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Charts Interativos */}
+      {dashboardData && (
+        <div className="grid lg:grid-cols-2 gap-6 mb-6">
+          {/* Documentos por Tipo - Interativo */}
+          <InteractiveChart
+            title="Documentos por Tipo"
+            description="Quantidade de cada tipo de documento processado. Clique nas barras para ver detalhes por score."
+            data={dashboardData.documentsByType}
+            type="bar"
+            onDrillDown={handleDrillDown}
+          />
+
+          {/* Tarefas por Status - Interativo */}
+          <InteractiveChart
+            title="Tarefas por Status"
+            description="Distribuição das tarefas por situação atual. Clique nas fatias para ver por responsável."
+            data={dashboardData.tasksByStatus}
+            type="pie"
+            onDrillDown={handleDrillDown}
+          />
+        </div>
+      )}
+
+      {/* Tendência de Processamento - Linha */}
+      {dashboardData && (
+        <div className="mb-6">
+          <InteractiveChart
+            title="Volume de Documentos Processados"
+            description="Evolução da quantidade de documentos processados ao longo do tempo. Linha crescente indica maior produtividade."
+            data={dashboardData.processingTrend}
+            type="line"
+            onDrillDown={handleDrillDown}
+            height={250}
+          />
+        </div>
+      )}
+
+
     </div>
   );
 }

@@ -28,6 +28,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '../ui/tooltip';
+import { FormField } from '../ui/form-field';
+import { useFormValidation } from '../../hooks/useFormValidation';
+import { validationRules } from '../../lib/validation';
+import { CommentsSection } from '../ui/comments-section';
+import { extractMentions } from '../../lib/collaboration';
+import { AuditTimeline } from '../ui/audit-timeline';
+import { addAuditEvent } from '../../lib/auditTrail';
 import {
   ArrowLeft,
   Save,
@@ -52,9 +59,10 @@ import {
   Download,
   Share2,
   MoreVertical,
+  MessageCircle,
 } from 'lucide-react';
 import { mockApi, type Document } from '../../lib/mockApi';
-import { toast } from 'sonner';
+import { useToast } from '../ui/toast-provider';
 import { Alert, AlertDescription } from '../ui/alert';
 import { motion } from 'motion/react';
 
@@ -79,6 +87,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
   const [loading, setLoading] = useState(true);
   const [editedFields, setEditedFields] = useState<Record<string, string>>({});
   const [showTaskSheet, setShowTaskSheet] = useState(false);
+  const toast = useToast();
   const [taskForm, setTaskForm] = useState({
     title: '',
     description: '',
@@ -86,6 +95,19 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
     priority: 'high' as 'high' | 'medium' | 'low',
     dueDate: '',
   });
+
+  const taskValidation = useFormValidation(
+    {
+      title: taskForm.title,
+      description: taskForm.description,
+      dueDate: taskForm.dueDate,
+    },
+    {
+      title: validationRules.taskTitle,
+      description: validationRules.taskDescription,
+      dueDate: validationRules.date,
+    }
+  );
   const [aiInsights, setAiInsights] = useState<AIInsight[]>([]);
   const [selectedTab, setSelectedTab] = useState('overview');
 
@@ -110,18 +132,28 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
         setEditedFields(doc.entities);
         
         // Pre-fill task form
-        setTaskForm({
+        const initialTaskForm = {
           title: `Investigar ${doc.entities.equipment || 'equipamento'} — ${doc.summary.split('.')[0]}`,
           description: doc.summary,
           assignee: 'João Silva',
-          priority: doc.score > 0.7 ? 'high' : doc.score > 0.4 ? 'medium' : 'low',
+          priority: (doc.score > 0.7 ? 'high' : doc.score > 0.4 ? 'medium' : 'low') as 'high' | 'medium' | 'low',
           dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
             .toISOString()
             .split('T')[0],
-        });
+        };
+        setTaskForm(initialTaskForm);
 
         // Generate AI insights
         generateAIInsights(doc);
+        
+        // Add audit event for document view
+        addAuditEvent({
+          documentId: documentId,
+          action: 'Documento visualizado',
+          user: 'Usuário Atual',
+          timestamp: new Date().toISOString(),
+          type: 'view',
+        });
       }
     } finally {
       setLoading(false);
@@ -156,7 +188,7 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
         confidence: 0.88,
         action: {
           label: 'Ver Histórico',
-          onClick: () => toast.info('Abrindo histórico do equipamento...'),
+          onClick: () => toast.loading('Carregando histórico...', 'Buscando dados do equipamento'),
         },
       });
     }
@@ -214,41 +246,85 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
   };
 
   const handleSaveFields = () => {
-    toast.success('Campos atualizados', {
-      description: 'As alterações foram salvas com sucesso',
-      action: {
-        label: 'Desfazer',
-        onClick: () => {
-          setEditedFields(document?.entities || {});
-          toast.info('Alterações desfeitas');
-        },
-      },
+    // Add audit event
+    addAuditEvent({
+      documentId: documentId,
+      action: 'Campos atualizados',
+      user: 'Usuário Atual',
+      timestamp: new Date().toISOString(),
+      details: `${Object.keys(editedFields).length} campos modificados`,
+      type: 'update',
     });
+    
+    toast.success('Campos atualizados', 'As alterações foram salvas com sucesso');
   };
 
   const handleFieldChange = (key: string, value: string) => {
+    // Basic validation for field values
+    if (key === 'temperature' && value) {
+      const temp = parseFloat(value);
+      if (isNaN(temp)) {
+        toast.error('Valor inválido', 'Temperatura deve ser um número');
+        return;
+      }
+      if (temp < -273.15) {
+        toast.error('Valor inválido', 'Temperatura não pode ser menor que -273.15°C');
+        return;
+      }
+      if (temp > 1000) {
+        toast.error('Valor inválido', 'Temperatura muito alta (máx. 1000°C)');
+        return;
+      }
+    }
+
+    if (key === 'date' && value) {
+      const date = new Date(value);
+      if (isNaN(date.getTime())) {
+        toast.error('Data inválida', 'Formato de data incorreto');
+        return;
+      }
+    }
+
     setEditedFields((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleCreateTask = async () => {
+    const validation = taskValidation.validateAll();
+    
+    if (!validation.isValid) {
+      toast.error('Formulário inválido', 'Corrija os erros antes de continuar');
+      return;
+    }
+
+    const loadingId = toast.loading('Criando tarefa...', 'Processando solicitação');
     try {
+      const mentions = extractMentions(taskForm.description);
       const task = await mockApi.createTask({
         ...taskForm,
         documentId: documentId,
       });
+      
+      // Add audit event
+      addAuditEvent({
+        documentId: documentId,
+        action: 'Tarefa criada',
+        user: 'Usuário Atual',
+        timestamp: new Date().toISOString(),
+        details: `${taskForm.title} - ${taskForm.priority === 'high' ? 'Alta' : taskForm.priority === 'medium' ? 'Média' : 'Baixa'} prioridade`,
+        type: 'task',
+      });
 
       setShowTaskSheet(false);
-
-      toast.success('Tarefa criada: ' + task.title, {
-        description: 'A tarefa foi atribuída e aparecerá na lista de tarefas',
-        action: {
-          label: 'Ver Tarefa',
-          onClick: () => handleNavigate('/tasks'),
-        },
-        duration: 5000,
-      });
+      toast.dismiss(loadingId);
+      
+      if (mentions.length > 0) {
+        toast.success('Tarefa criada: ' + task.title, `${mentions.length} pessoa(s) mencionada(s) serão notificadas`);
+      } else {
+        toast.success('Tarefa criada: ' + task.title, 'A tarefa foi atribuída e aparecerá na lista de tarefas');
+      }
     } catch (error) {
-      toast.error('Erro ao criar tarefa');
+      toast.dismiss(loadingId);
+      toast.error('Erro ao criar tarefa', 'Tente novamente em alguns instantes.');
     }
   };
 
@@ -257,24 +333,20 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
       rating,
       comment: 'Feedback do usuário',
     });
-    toast.success('Obrigado pelo feedback!', {
-      description: rating === 1 
+    toast.success('Obrigado pelo feedback!', 
+      rating === 1 
         ? 'Sua avaliação positiva ajuda a melhorar o sistema.' 
-        : 'Sua avaliação ajudará a melhorar a precisão da IA.',
-    });
+        : 'Sua avaliação ajudará a melhorar a precisão da IA.'
+    );
   };
 
   const handleDownload = () => {
-    toast.success('Download iniciado', {
-      description: 'O documento está sendo preparado para download...',
-    });
+    toast.success('Download iniciado', 'O documento está sendo preparado para download...');
   };
 
   const handleShare = () => {
-    toast.info('Compartilhar documento', {
-      description: 'Link de compartilhamento copiado para a área de transferência',
-    });
     navigator.clipboard.writeText(window.location.href);
+    toast.success('Link copiado!', 'Link de compartilhamento copiado para a área de transferência');
   };
 
   const getScoreColor = (score: number) => {
@@ -426,29 +498,36 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                 </SheetDescription>
               </SheetHeader>
               <div className="space-y-6 mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="task-title">Título</Label>
-                  <Input
-                    id="task-title"
-                    value={taskForm.title}
-                    onChange={(e) =>
-                      setTaskForm({ ...taskForm, title: e.target.value })
-                    }
-                  />
-                </div>
+                <FormField
+                  label="Título"
+                  name="title"
+                  placeholder="Digite o título da tarefa"
+                  required
+                  {...taskValidation.getFieldProps('title')}
+                  error={taskValidation.getFieldError('title')}
+                  onChange={(e) => {
+                    taskValidation.updateField('title', e.target.value);
+                    setTaskForm({ ...taskForm, title: e.target.value });
+                  }}
+                />
 
                 <div className="space-y-2">
-                  <Label htmlFor="task-description">Descrição</Label>
-                  <Textarea
-                    id="task-description"
-                    value={taskForm.description}
-                    onChange={(e) =>
-                      setTaskForm({ ...taskForm, description: e.target.value })
-                    }
+                  <FormField
+                    label="Descrição"
+                    name="description"
+                    type="textarea"
+                    placeholder="Descreva os detalhes da tarefa... Use @nome para mencionar alguém"
+                    required
                     rows={4}
+                    {...taskValidation.getFieldProps('description')}
+                    error={taskValidation.getFieldError('description')}
+                    onChange={(e) => {
+                      taskValidation.updateField('description', e.target.value);
+                      setTaskForm({ ...taskForm, description: e.target.value });
+                    }}
                   />
                   <p className="text-xs text-[var(--muted)]">
-                    Contexto do documento incluído automaticamente
+                    Use @nome para mencionar colegas. Contexto do documento incluído automaticamente.
                   </p>
                 </div>
 
@@ -493,22 +572,24 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="task-due">Data de vencimento</Label>
-                  <Input
-                    id="task-due"
-                    type="date"
-                    value={taskForm.dueDate}
-                    onChange={(e) =>
-                      setTaskForm({ ...taskForm, dueDate: e.target.value })
-                    }
-                  />
-                </div>
+                <FormField
+                  label="Data de vencimento"
+                  name="dueDate"
+                  type="date"
+                  required
+                  {...taskValidation.getFieldProps('dueDate')}
+                  error={taskValidation.getFieldError('dueDate')}
+                  onChange={(e) => {
+                    taskValidation.updateField('dueDate', e.target.value);
+                    setTaskForm({ ...taskForm, dueDate: e.target.value });
+                  }}
+                />
 
                 <div className="flex gap-3 pt-4">
                   <Button
                     onClick={handleCreateTask}
-                    className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
+                    disabled={!taskValidation.isFormValid}
+                    className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-700)] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Criar Tarefa
                   </Button>
@@ -549,13 +630,11 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="insights">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Insights IA
-          </TabsTrigger>
+          <TabsTrigger value="insights">Insights IA</TabsTrigger>
           <TabsTrigger value="fields">Campos</TabsTrigger>
+          <TabsTrigger value="comments">Comentários</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 
@@ -884,96 +963,27 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
           </Card>
         </TabsContent>
 
+        {/* Comments Tab */}
+        <TabsContent value="comments" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Colaboração
+              </CardTitle>
+              <p className="text-sm text-[var(--muted)]">
+                Discuta este documento com a equipe. Use @nome para mencionar colegas.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <CommentsSection documentId={documentId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* History Tab */}
         <TabsContent value="history" className="space-y-6">
-          <div className="grid lg:grid-cols-2 gap-6">
-            {/* Audit Trail */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Histórico de Auditoria
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {document.auditTrail?.map((entry, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="flex gap-3 pb-3 last:pb-0 border-b last:border-0 border-[var(--border)]"
-                    >
-                      <div className="mt-1">
-                        {entry.action.includes('criado') ? (
-                          <Plus className="w-4 h-4 text-[var(--primary)]" />
-                        ) : entry.action.includes('OCR') ? (
-                          <Clock className="w-4 h-4 text-[var(--warning)]" />
-                        ) : (
-                          <User className="w-4 h-4 text-[var(--muted)]" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{entry.action}</div>
-                        <div className="text-xs text-[var(--muted)]">
-                          {entry.user} • {new Date(entry.timestamp).toLocaleString('pt-BR')}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Feedback */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Avaliação da Análise</CardTitle>
-                <p className="text-sm text-[var(--muted)]">
-                  Sua avaliação ajuda a melhorar a precisão da IA
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm mb-3">
-                    A classificação automática foi precisa?
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex-1 gap-2"
-                      onClick={() => handleFeedback(1)}
-                    >
-                      <ThumbsUp className="w-4 h-4" />
-                      Sim, precisa
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 gap-2"
-                      onClick={() => handleFeedback(0)}
-                    >
-                      <ThumbsDown className="w-4 h-4" />
-                      Não, incorreta
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[var(--border)]">
-                  <Label htmlFor="feedback-comment">Comentário adicional (opcional)</Label>
-                  <Textarea
-                    id="feedback-comment"
-                    placeholder="Descreva o que poderia ser melhorado..."
-                    rows={3}
-                    className="mt-2"
-                  />
-                  <Button variant="outline" size="sm" className="mt-2">
-                    Enviar Comentário
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AuditTimeline documentId={documentId} />
         </TabsContent>
       </Tabs>
 

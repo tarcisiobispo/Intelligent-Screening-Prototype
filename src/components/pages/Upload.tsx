@@ -16,7 +16,7 @@ import {
   HardDrive,
 } from 'lucide-react';
 import { mockApi } from '../../lib/mockApi';
-import { toast } from 'sonner';
+import { useToast } from '../ui/toast-provider';
 
 interface UploadedFile {
   file: File;
@@ -30,6 +30,7 @@ interface UploadedFile {
 export function Upload() {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const toast = useToast();
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -57,7 +58,53 @@ export function Upload() {
   };
 
   const processFiles = async (newFiles: File[]) => {
-    const uploadedFiles: UploadedFile[] = newFiles.map((file) => ({
+    // Validate files before processing
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    newFiles.forEach((file) => {
+      // File size validation (50MB max)
+      if (file.size > 50 * 1024 * 1024) {
+        errors.push(`${file.name}: Arquivo muito grande (máx. 50MB)`);
+        return;
+      }
+
+      // File type validation
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg', 
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        errors.push(`${file.name}: Tipo de arquivo não suportado`);
+        return;
+      }
+
+      // File name validation
+      const invalidChars = /[<>:"/\\|?*]/;
+      if (invalidChars.test(file.name)) {
+        errors.push(`${file.name}: Nome contém caracteres inválidos`);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    // Show validation errors
+    if (errors.length > 0) {
+      errors.forEach(error => {
+        toast.error('Arquivo inválido', error);
+      });
+    }
+
+    // Process only valid files
+    if (validFiles.length === 0) return;
+
+    const uploadedFiles: UploadedFile[] = validFiles.map((file) => ({
       file,
       status: 'uploading' as const,
       progress: 0,
@@ -66,7 +113,7 @@ export function Upload() {
     setFiles((prev) => [...prev, ...uploadedFiles]);
 
     // Simulate upload and OCR processing
-    for (let i = 0; i < uploadedFiles.length; i++) {
+    for (let i = 0; i < validFiles.length; i++) {
       const fileIndex = files.length + i;
 
       // Upload phase
@@ -105,7 +152,7 @@ export function Upload() {
         return updated;
       });
 
-      toast.success(`${uploadedFiles[i].file.name} processado com sucesso`);
+      toast.success('Documento processado!', `${validFiles[i].name} foi analisado com sucesso`);
     }
   };
 
@@ -129,13 +176,11 @@ export function Upload() {
       return updated;
     });
 
-    toast.success('Documento reprocessado');
+    toast.success('Documento reprocessado', 'OCR executado novamente com sucesso');
   };
 
   const handleRequestResend = (index: number) => {
-    toast.success('Solicitação de reenvio enviada', {
-      description: 'O responsável será notificado',
-    });
+    toast.success('Solicitação enviada', 'O responsável será notificado para reenviar o documento');
   };
 
   const handleRemove = (index: number) => {
@@ -143,15 +188,17 @@ export function Upload() {
   };
 
   const handleConnectDrive = () => {
-    toast.info('Conectar ao Google Drive', {
-      description: 'Funcionalidade em desenvolvimento',
-    });
+    toast.loading('Conectando...', 'Autenticando com Google Drive');
+    setTimeout(() => {
+      toast.error('Funcionalidade em desenvolvimento', 'Esta opção estará disponível em breve');
+    }, 2000);
   };
 
   const handleConnectSharePoint = () => {
-    toast.info('Conectar ao SharePoint', {
-      description: 'Funcionalidade em desenvolvimento',
-    });
+    toast.loading('Conectando...', 'Autenticando com SharePoint');
+    setTimeout(() => {
+      toast.error('Funcionalidade em desenvolvimento', 'Esta opção estará disponível em breve');
+    }, 2000);
   };
 
   const getConfidenceBadge = (confidence: number) => {

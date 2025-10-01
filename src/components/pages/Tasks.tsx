@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
+import { ErrorState } from '../ui/error-state';
+import { TaskCardSkeleton } from '../ui/loading-skeletons';
+
 import {
   Select,
   SelectContent,
@@ -16,24 +20,46 @@ import {
   Calendar,
   ExternalLink,
   Filter,
+  ArrowUpDown,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Send,
 } from 'lucide-react';
 import { mockApi, type Task } from '../../lib/mockApi';
 import { navigate } from '../../lib/navigation';
+import { exportToExcel, exportToPDF, sendWebhook } from '../../lib/export';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 export function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('todos');
+  const [dateFilter, setDateFilter] = useState<string>('');
+  // Using sonner toast
 
   useEffect(() => {
     loadTasks();
   }, []);
 
   const loadTasks = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await mockApi.getTasks();
       setTasks(data);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+      setError('Erro ao carregar tarefas. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
@@ -66,6 +92,11 @@ export function Tasks() {
   const filteredTasks = tasks.filter((task) => {
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
+    if (assigneeFilter && assigneeFilter !== 'todos' && task.assignee !== assigneeFilter) return false;
+    if (dateFilter) {
+      const taskDate = new Date(task.dueDate).toISOString().split('T')[0];
+      if (taskDate !== dateFilter) return false;
+    }
     return true;
   });
 
@@ -85,37 +116,139 @@ export function Tasks() {
             {filteredTasks.length} tarefas • Gerenciamento de atividades
           </p>
         </div>
+        
+        {/* Export Actions */}
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => {
+                exportToExcel(filteredTasks, 'tarefas');
+                toast.success('Export realizado!', {
+                  description: 'Arquivo Excel baixado com sucesso'
+                });
+              }}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel (.csv)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                exportToPDF(filteredTasks, 'tarefas');
+                toast.success('Export realizado!', {
+                  description: 'Arquivo PDF baixado com sucesso'
+                });
+              }}>
+                <FileText className="w-4 h-4 mr-2" />
+                PDF (.html)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={async () => {
+              const loadingToast = toast.loading('Enviando webhook...');
+              
+              try {
+                const result = await sendWebhook('tasks_export', {
+                  count: filteredTasks.length,
+                  filters: { statusFilter, priorityFilter, assigneeFilter, dateFilter }
+                });
+                
+                toast.dismiss(loadingToast);
+                
+                if (result.success) {
+                  toast.success('Webhook enviado!', {
+                    description: result.message
+                  });
+                } else {
+                  toast.error('Erro no webhook', {
+                    description: result.message
+                  });
+                }
+              } catch (error) {
+                toast.dismiss(loadingToast);
+                toast.error('Falha ao enviar webhook');
+              }
+            }}
+          >
+            <Send className="w-4 h-4" />
+            Webhook
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="todo">A fazer</SelectItem>
-                <SelectItem value="in_progress">Em andamento</SelectItem>
-                <SelectItem value="done">Concluídas</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap gap-3">
+            <div className="space-y-1 w-36">
+              <label className="text-xs font-medium text-[var(--muted)]">Responsável</label>
+              <div className="relative">
+                <Input
+                  value={assigneeFilter === 'todos' ? '' : assigneeFilter}
+                  onChange={(e) => setAssigneeFilter(e.target.value || 'todos')}
+                  placeholder="Nome do responsável"
+                  className="h-8 pl-8 text-sm"
+                />
+                <User className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
+              </div>
+            </div>
 
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Prioridade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as prioridades</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="medium">Média</SelectItem>
-                <SelectItem value="low">Baixa</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-1 w-28">
+              <label className="text-xs font-medium text-[var(--muted)]">Status</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger size="sm" className="text-sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="todo">A fazer</SelectItem>
+                  <SelectItem value="in_progress">Em andamento</SelectItem>
+                  <SelectItem value="done">Concluídas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1 w-28">
+              <label className="text-xs font-medium text-[var(--muted)]">Prioridade</label>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger size="sm" className="text-sm">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="medium">Média</SelectItem>
+                  <SelectItem value="low">Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1 w-36">
+              <label className="text-xs font-medium text-[var(--muted)]">Data Vencimento</label>
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="h-8 text-sm pl-8"
+                  style={{
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'textfield'
+                  } as any}
+                />
+                <Calendar className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -126,18 +259,24 @@ export function Tasks() {
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
               <CardHeader>
-                <div className="h-6 bg-[var(--bg)] rounded animate-pulse" />
+                <div className="h-6 bg-[var(--border)] rounded animate-pulse" />
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {[...Array(2)].map((_, j) => (
-                    <div key={j} className="h-32 bg-[var(--bg)] rounded animate-pulse" />
+                    <TaskCardSkeleton key={j} />
                   ))}
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+      ) : error ? (
+        <ErrorState
+          title="Erro ao carregar tarefas"
+          message={error}
+          onRetry={loadTasks}
+        />
       ) : (
         <div className="grid md:grid-cols-3 gap-6">
           {/* To Do */}
