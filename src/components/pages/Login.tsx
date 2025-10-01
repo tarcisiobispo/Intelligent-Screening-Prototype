@@ -92,7 +92,7 @@ export function Login() {
 
       // Redirect to dashboard
       setTimeout(() => {
-        window.history.pushState({}, '', '/dashboard');
+        window.history.pushState({}, '', '/Intelligent-Screening-Prototype/dashboard');
         window.dispatchEvent(new PopStateEvent('popstate'));
       }, 500);
     } catch (err: any) {
