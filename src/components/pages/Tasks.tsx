@@ -111,7 +111,7 @@ export function Tasks() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="mb-2">Tarefas</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Tarefas</h1>
           <p className="text-[var(--muted)]">
             {filteredTasks.length} tarefas encontradas • Organize seu trabalho
           </p>

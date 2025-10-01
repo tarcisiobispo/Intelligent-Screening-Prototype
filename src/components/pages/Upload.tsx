@@ -214,7 +214,7 @@ export function Upload() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="mb-2">Enviar Documentos</h1>
+        <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Enviar Documentos</h1>
         <p className="text-[var(--muted)]">
           Faça upload dos seus arquivos para análise automática e classificação inteligente
         </p>

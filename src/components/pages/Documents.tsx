@@ -194,7 +194,7 @@ export function Documents() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="mb-2">Documentos</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Documentos</h1>
           <p className="text-[var(--muted)]">
             {documents.length} documentos encontrados
             {searchQuery && ` para "${searchQuery}"`}

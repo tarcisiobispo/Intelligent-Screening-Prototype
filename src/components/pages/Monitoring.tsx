@@ -21,14 +21,14 @@ export function Monitoring() {
   return (
     <div className="space-y-6 max-w-[1400px]">
       <div>
-        <h1 className="mb-2">Monitoramento</h1>
+        <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Monitoramento</h1>
         <p className="text-[var(--muted)]">Acompanhe a saúde do sistema em tempo real</p>
       </div>
 
       {/* System Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
             <Activity className="w-5 h-5 text-[var(--primary)]" />
             Saúde do Sistema
           </CardTitle>
@@ -89,7 +89,7 @@ export function Monitoring() {
       <div className="grid md:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <Server className="w-5 h-5" />
               CPU
             </CardTitle>
@@ -107,7 +107,7 @@ export function Monitoring() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <Database className="w-5 h-5" />
               RAM
             </CardTitle>
@@ -125,7 +125,7 @@ export function Monitoring() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <Zap className="w-5 h-5" />
               Rede
             </CardTitle>
