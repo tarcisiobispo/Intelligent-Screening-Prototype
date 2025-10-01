@@ -171,9 +171,9 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">Dashboard Interativo</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">Central de Monitoramento</h1>
           <p className="text-sm text-[var(--muted)]">
-            Análise interativa com drill-down e filtros dinâmicos
+            Visão executiva em tempo real com gráficos interativos e análise detalhada
           </p>
         </div>
         <div className="flex gap-2">
