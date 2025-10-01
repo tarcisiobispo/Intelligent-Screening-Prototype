@@ -281,8 +281,8 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {drillPath.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={handleBack} className="text-xs">
-                <ArrowLeft className="w-3 h-3 mr-1" />
+              <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
                 Voltar
               </Button>
             )}

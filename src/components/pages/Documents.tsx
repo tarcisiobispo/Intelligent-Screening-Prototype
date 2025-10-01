@@ -283,15 +283,15 @@ export function Documents() {
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleBulkCreateTasks} className="gap-1">
+                <Button variant="outline" size="sm" onClick={handleBulkCreateTasks} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Criar Tarefas
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleBulkReprocess} className="gap-1">
+                <Button variant="outline" size="sm" onClick={handleBulkReprocess} className="gap-2">
                   <ArrowUpDown className="w-4 h-4" />
                   Reprocessar
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleBulkArchive} className="gap-1">
+                <Button variant="outline" size="sm" onClick={handleBulkArchive} className="gap-2">
                   <FileText className="w-4 h-4" />
                   Arquivar
                 </Button>

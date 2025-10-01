@@ -318,7 +318,7 @@ export function Dashboard() {
                           size="sm"
                           className="p-0 h-auto text-xs text-[var(--primary)] hover:text-[var(--primary-700)] font-medium"
                         >
-                          {kpi.action} <ArrowRight className="w-1.5 h-1.5 ml-1" />
+                          {kpi.action} <ArrowRight className="w-3 h-3 ml-1" />
                         </Button>
                       )}
                     </div>
