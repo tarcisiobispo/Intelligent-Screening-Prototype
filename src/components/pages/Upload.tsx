@@ -203,11 +203,11 @@ export function Upload() {
 
   const getConfidenceBadge = (confidence: number) => {
     if (confidence >= 0.8) {
-      return { label: 'High', color: 'var(--success)' };
+      return { label: 'Alta', color: 'var(--success)' };
     } else if (confidence >= 0.5) {
-      return { label: 'Med', color: 'var(--warning)' };
+      return { label: 'Média', color: 'var(--warning)' };
     } else {
-      return { label: 'Low', color: 'var(--danger)' };
+      return { label: 'Baixa', color: 'var(--danger)' };
     }
   };
 
@@ -281,7 +281,7 @@ export function Upload() {
       {files.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Arquivos ({files.length})</CardTitle>
+            <CardTitle className="text-lg font-semibold">Arquivos ({files.length})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {files.map((uploadedFile, index) => {

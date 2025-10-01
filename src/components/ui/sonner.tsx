@@ -6,9 +6,15 @@ import { Toaster as Sonner, ToasterProps } from "sonner";
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 
+  // Validate theme value to prevent runtime errors
+  const validThemes: ToasterProps["theme"][] = ["light", "dark", "system"];
+  const safeTheme = validThemes.includes(theme as ToasterProps["theme"]) 
+    ? (theme as ToasterProps["theme"]) 
+    : "system";
+
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={safeTheme}
       className="toaster group"
       style={
         {
