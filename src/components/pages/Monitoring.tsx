@@ -12,17 +12,17 @@ export function Monitoring() {
   ];
 
   const metrics = [
-    { label: 'Documentos Processados (24h)', value: '1,245', trend: '+12%' },
-    { label: 'Taxa de Sucesso OCR', value: '96.5%', trend: '+2.1%' },
-    { label: 'Tempo Médio de Processamento', value: '2.3s', trend: '-8%' },
-    { label: 'Requisições/min', value: '342', trend: '+5%' },
+    { label: 'Documentos Hoje', value: '1,245', trend: '+12%' },
+    { label: 'Taxa de Sucesso', value: '96.5%', trend: '+2.1%' },
+    { label: 'Tempo Médio', value: '2.3s', trend: '-8%' },
+    { label: 'Atividade/min', value: '342', trend: '+5%' },
   ];
 
   return (
     <div className="space-y-6 max-w-[1400px]">
       <div>
         <h1 className="mb-2">Monitoramento</h1>
-        <p className="text-[var(--muted)]">Status dos serviços e métricas em tempo real</p>
+        <p className="text-[var(--muted)]">Acompanhe a saúde do sistema em tempo real</p>
       </div>
 
       {/* System Status */}
@@ -30,7 +30,7 @@ export function Monitoring() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-[var(--primary)]" />
-            Status dos Serviços
+            Saúde do Sistema
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -60,11 +60,11 @@ export function Monitoring() {
                         : 'var(--warning)',
                   }}
                 >
-                  {service.status === 'operational' ? 'Operacional' : 'Degradado'}
+                  {service.status === 'operational' ? 'Funcionando' : 'Instabilidade'}
                 </Badge>
                 <div className="space-y-1 text-sm text-[var(--muted)]">
-                  <div>Uptime: {service.uptime}</div>
-                  <div>Resposta: {service.responseTime}</div>
+                  <div>Disponibilidade: {service.uptime}</div>
+                  <div>Velocidade: {service.responseTime}</div>
                 </div>
               </div>
             ))}
@@ -79,7 +79,7 @@ export function Monitoring() {
             <CardContent className="pt-6">
               <div className="text-sm text-[var(--muted)] mb-2">{metric.label}</div>
               <div className="text-2xl font-bold mb-1">{metric.value}</div>
-              <div className="text-xs text-[var(--success)]">{metric.trend} vs ontem</div>
+              <div className="text-xs text-[var(--success)]">{metric.trend} desde ontem</div>
             </CardContent>
           </Card>
         ))}
@@ -109,7 +109,7 @@ export function Monitoring() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="w-5 h-5" />
-              Memória
+              RAM
             </CardTitle>
           </CardHeader>
           <CardContent>

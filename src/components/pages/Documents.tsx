@@ -103,7 +103,7 @@ export function Documents() {
       setDocuments(docs);
     } catch (error) {
       console.error('Error loading documents:', error);
-      setError('Erro ao carregar documentos. Verifique sua conexão.');
+      setError('Não foi possível carregar os documentos. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -194,11 +194,11 @@ export function Documents() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="mb-2">Inbox de Documentos</h1>
+          <h1 className="mb-2">Documentos</h1>
           <p className="text-[var(--muted)]">
-            {documents.length} documentos
-            {searchQuery && ` • Resultados para "${searchQuery}"`}
-            {!searchQuery && ` • Ordenados por score`}
+            {documents.length} documentos encontrados
+            {searchQuery && ` para "${searchQuery}"`}
+            {!searchQuery && ` • Ordenados por prioridade`}
           </p>
         </div>
         
@@ -264,7 +264,7 @@ export function Documents() {
             }}
           >
             <Send className="w-4 h-4" />
-            Webhook
+            Integrar
           </Button>
         </div>
       </div>
@@ -279,7 +279,7 @@ export function Documents() {
                   {selectedDocs.length} documento{selectedDocs.length > 1 ? 's' : ''} selecionado{selectedDocs.length > 1 ? 's' : ''}
                 </span>
                 <Button variant="outline" size="sm" onClick={() => setSelectedDocs([])}>
-                  Limpar seleção
+                  Desmarcar
                 </Button>
               </div>
               <div className="flex gap-2">
@@ -309,7 +309,7 @@ export function Documents() {
             <SmartSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Busca inteligente: equipamento, risco, temperatura..."
+              placeholder="Busque por equipamento, risco, temperatura ou qualquer palavra-chave..."
             />
 
             {/* Filter Controls */}
@@ -321,7 +321,7 @@ export function Documents() {
                   onChange={handleSelectAll}
                   className="rounded border-[var(--border)]"
                 />
-                <label className="text-sm font-medium">Selecionar todos</label>
+                <label className="text-sm font-medium">Marcar todos</label>
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -331,7 +331,7 @@ export function Documents() {
                   <Input
                     value={assigneeFilter === 'todos' ? '' : assigneeFilter}
                     onChange={(e) => setAssigneeFilter(e.target.value || 'todos')}
-                    placeholder="Nome do responsável"
+                    placeholder="Digite o nome"
                     className="h-8 pl-8 text-sm"
                   />
                   <User className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
@@ -426,7 +426,7 @@ export function Documents() {
         <Card>
           <CardContent className="pt-6 text-center py-12">
             <FileText className="w-12 h-12 mx-auto mb-4 text-[var(--muted)]" />
-            <p className="text-[var(--muted)]">Nenhum documento encontrado</p>
+            <p className="text-[var(--muted)]">Nenhum documento corresponde aos filtros</p>
           </CardContent>
         </Card>
       ) : (
@@ -512,7 +512,7 @@ export function Documents() {
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
                       <div className="text-sm text-[var(--muted)]">
-                        {doc.status === 'pending' ? 'Pendente de revisão' : 'Revisado'}
+                        {doc.status === 'pending' ? 'Aguardando revisão' : 'Revisado'}
                       </div>
                       <div className="flex gap-2">
                         <Button

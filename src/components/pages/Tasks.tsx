@@ -59,7 +59,7 @@ export function Tasks() {
       setTasks(data);
     } catch (error) {
       console.error('Error loading tasks:', error);
-      setError('Erro ao carregar tarefas. Verifique sua conexão.');
+      setError('Não foi possível carregar as tarefas. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ export function Tasks() {
         <div>
           <h1 className="mb-2">Tarefas</h1>
           <p className="text-[var(--muted)]">
-            {filteredTasks.length} tarefas • Gerenciamento de atividades
+            {filteredTasks.length} tarefas encontradas • Organize seu trabalho
           </p>
         </div>
         
@@ -179,7 +179,7 @@ export function Tasks() {
             }}
           >
             <Send className="w-4 h-4" />
-            Webhook
+            Integrar
           </Button>
         </div>
       </div>
@@ -194,7 +194,7 @@ export function Tasks() {
                 <Input
                   value={assigneeFilter === 'todos' ? '' : assigneeFilter}
                   onChange={(e) => setAssigneeFilter(e.target.value || 'todos')}
-                  placeholder="Nome do responsável"
+                  placeholder="Digite o nome"
                   className="h-8 pl-8 text-sm"
                 />
                 <User className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
@@ -234,7 +234,7 @@ export function Tasks() {
             </div>
 
             <div className="space-y-1 w-36">
-              <label className="text-xs font-medium text-[var(--muted)]">Data Vencimento</label>
+              <label className="text-xs font-medium text-[var(--muted)]">Vencimento</label>
               <div className="relative">
                 <Input
                   type="date"
@@ -273,7 +273,7 @@ export function Tasks() {
         </div>
       ) : error ? (
         <ErrorState
-          title="Erro ao carregar tarefas"
+          title="Ops, algo deu errado"
           message={error}
           onRetry={loadTasks}
         />
@@ -293,7 +293,7 @@ export function Tasks() {
               ))}
               {tasksByStatus.todo.length === 0 && (
                 <p className="text-sm text-[var(--muted)] text-center py-8">
-                  Nenhuma tarefa pendente
+                  Tudo em dia por aqui!
                 </p>
               )}
             </CardContent>
@@ -313,7 +313,7 @@ export function Tasks() {
               ))}
               {tasksByStatus.in_progress.length === 0 && (
                 <p className="text-sm text-[var(--muted)] text-center py-8">
-                  Nenhuma tarefa em andamento
+                  Nada sendo trabalhado
                 </p>
               )}
             </CardContent>
@@ -333,7 +333,7 @@ export function Tasks() {
               ))}
               {tasksByStatus.done.length === 0 && (
                 <p className="text-sm text-[var(--muted)] text-center py-8">
-                  Nenhuma tarefa concluída
+                  Ainda nada finalizado
                 </p>
               )}
             </CardContent>

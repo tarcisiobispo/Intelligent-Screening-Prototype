@@ -65,7 +65,7 @@ export function Upload() {
     newFiles.forEach((file) => {
       // File size validation (50MB max)
       if (file.size > 50 * 1024 * 1024) {
-        errors.push(`${file.name}: Arquivo muito grande (máx. 50MB)`);
+        errors.push(`${file.name}: Muito grande (máximo 50MB)`);
         return;
       }
 
@@ -80,14 +80,14 @@ export function Upload() {
       ];
       
       if (!allowedTypes.includes(file.type)) {
-        errors.push(`${file.name}: Tipo de arquivo não suportado`);
+        errors.push(`${file.name}: Formato não aceito`);
         return;
       }
 
       // File name validation
       const invalidChars = /[<>:"/\\|?*]/;
       if (invalidChars.test(file.name)) {
-        errors.push(`${file.name}: Nome contém caracteres inválidos`);
+        errors.push(`${file.name}: Nome com caracteres especiais`);
         return;
       }
 
@@ -214,9 +214,9 @@ export function Upload() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="mb-2">Upload de Documentos</h1>
+        <h1 className="mb-2">Enviar Documentos</h1>
         <p className="text-[var(--muted)]">
-          Envie documentos para triagem inteligente com OCR e classificação automática
+          Faça upload dos seus arquivos para análise automática e classificação inteligente
         </p>
       </div>
 
@@ -237,9 +237,9 @@ export function Upload() {
             onDrop={handleDrop}
           >
             <UploadIcon className="w-12 h-12 mx-auto mb-4 text-[var(--primary)]" />
-            <h3 className="mb-2">Arraste arquivos aqui ou conecte seu Google Drive</h3>
+            <h3 className="mb-2">Solte seus arquivos aqui</h3>
             <p className="text-[var(--muted)] mb-4">
-              PDF, imagens, documentos Office (máx. 50MB por arquivo)
+              PDF, imagens, Word (até 50MB cada)
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
@@ -259,7 +259,7 @@ export function Upload() {
                   }}
                 >
                   <HardDrive className="w-4 h-4" />
-                  Selecionar Arquivos
+                  Escolher Arquivos
                 </Button>
               </label>
 
@@ -315,7 +315,7 @@ export function Upload() {
                       <div className="flex items-center gap-2 mt-2">
                         {uploadedFile.status === 'uploading' && (
                           <>
-                            <span className="text-sm text-[var(--muted)]">Enviando...</span>
+                            <span className="text-sm text-[var(--muted)]">Carregando...</span>
                             <Progress value={uploadedFile.progress} className="flex-1" />
                           </>
                         )}
@@ -324,7 +324,7 @@ export function Upload() {
                           <>
                             <RefreshCw className="w-4 h-4 text-[var(--primary)] animate-spin" />
                             <span className="text-sm text-[var(--primary)]">
-                              Processando OCR...
+                              Analisando texto...
                             </span>
                           </>
                         )}
@@ -332,7 +332,7 @@ export function Upload() {
                         {uploadedFile.status === 'complete' && (
                           <>
                             <CheckCircle className="w-4 h-4 text-[var(--success)]" />
-                            <span className="text-sm text-[var(--success)]">Completo</span>
+                            <span className="text-sm text-[var(--success)]">Pronto</span>
                             {confidenceBadge && (
                               <Badge
                                 variant="secondary"
@@ -371,7 +371,7 @@ export function Upload() {
                             <AlertDescription>
                               <div className="flex items-center justify-between gap-2">
                                 <span className="text-sm">
-                                  OCR de baixa confiança. Reprocessar ou solicitar reenvio?
+                                  Texto não ficou muito claro. Tentar novamente?
                                 </span>
                                 <div className="flex gap-2">
                                   <Button
@@ -381,7 +381,7 @@ export function Upload() {
                                     onClick={() => handleReprocess(index)}
                                   >
                                     <RefreshCw className="w-3 h-3" />
-                                    Reprocessar
+                                    Tentar Novamente
                                   </Button>
                                   <Button
                                     size="sm"
@@ -390,7 +390,7 @@ export function Upload() {
                                     onClick={() => handleRequestResend(index)}
                                   >
                                     <Send className="w-3 h-3" />
-                                    Solicitar reenvio
+                                    Pedir Reenvio
                                   </Button>
                                 </div>
                               </div>
@@ -410,25 +410,25 @@ export function Upload() {
       {files.length === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Dicas para melhor reconhecimento</CardTitle>
+            <CardTitle className="text-lg font-semibold">Como obter melhores resultados</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-[var(--muted)]">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-[var(--success)] mt-0.5 flex-shrink-0" />
-                Use imagens com boa iluminação e contraste
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-4 h-4 text-[var(--success)] flex-shrink-0" />
+                <span className="text-[var(--text)]">Fotos nítidas com boa luz funcionam melhor</span>
               </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-[var(--success)] mt-0.5 flex-shrink-0" />
-                PDFs com texto nativo têm melhor precisão que scans
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-4 h-4 text-[var(--success)] flex-shrink-0" />
+                <span className="text-[var(--text)]">PDFs digitais são mais precisos que fotos</span>
               </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-[var(--success)] mt-0.5 flex-shrink-0" />
-                Resolução mínima recomendada: 300 DPI
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-4 h-4 text-[var(--success)] flex-shrink-0" />
+                <span className="text-[var(--text)]">Use alta qualidade (300 DPI ou mais)</span>
               </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-[var(--success)] mt-0.5 flex-shrink-0" />
-                Evite documentos com marcas d'água ou sobreposições
+              <li className="flex items-center gap-3">
+                <CheckCircle className="w-4 h-4 text-[var(--success)] flex-shrink-0" />
+                <span className="text-[var(--text)]">Evite marcas d'água ou textos sobrepostos</span>
               </li>
             </ul>
           </CardContent>
