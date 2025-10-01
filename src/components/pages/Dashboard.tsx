@@ -200,7 +200,7 @@ export function Dashboard() {
       {/* Resumo Geral do Sistema */}
       <Card className="mb-6">
         <CardHeader className="px-4 pt-2 pb-0">
-          <CardTitle className="text-base font-bold">Resumo Geral do Sistema</CardTitle>
+          <CardTitle className="text-base font-bold">Visão Geral</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-2 pt-0">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -208,25 +208,25 @@ export function Dashboard() {
               <div className="text-2xl font-bold text-[var(--primary)]">
                 {stats?.totalDocuments || 0}
               </div>
-              <div className="text-sm text-[var(--muted)]">Total Documentos</div>
+              <div className="text-sm text-[var(--muted)]">Total</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-[var(--primary)]">
                 {(stats?.totalDocuments || 0) - (stats?.pendingReview || 0)}
               </div>
-              <div className="text-sm text-[var(--muted)]">Processados</div>
+              <div className="text-sm text-[var(--muted)]">Concluídos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-[var(--warning)]">
                 2.8min
               </div>
-              <div className="text-sm text-[var(--muted)]">Tempo Médio</div>
+              <div className="text-sm text-[var(--muted)]">Tempo/Doc</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-[var(--success)]">
                 94%
               </div>
-              <div className="text-sm text-[var(--muted)]">Taxa de Sucesso</div>
+              <div className="text-sm text-[var(--muted)]">Precisão</div>
             </div>
           </div>
         </CardContent>
@@ -239,8 +239,8 @@ export function Dashboard() {
       >
         <AlertTriangle className="w-4 h-4 text-[var(--danger)]" />
         <AlertDescription className="text-[var(--text)]">
-          <strong>Atenção:</strong> Transformador T123 com temperatura 120°C (doc_001) — 
-          Recomendado desligamento imediato. <span className="underline">Clique para ver detalhes</span>
+          <strong>Ação Necessária:</strong> Transformador T123 com temperatura crítica de 120°C — 
+          Desligamento urgente recomendado. <span className="underline">Ver documento</span>
         </AlertDescription>
       </Alert>
 
@@ -294,7 +294,7 @@ export function Dashboard() {
                       {kpi.trend && (
                         <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium">
                           <TrendingUp className="w-3 h-3" />
-                          <span className="truncate">{kpi.trend} vs semana</span>
+                          <span className="truncate">{kpi.trend} esta semana</span>
                         </div>
                       )}
 
@@ -337,10 +337,10 @@ export function Dashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-bold">
             <Filter className="w-5 h-5" />
-            Filtros do Dashboard
+            Personalizar Visualização
           </CardTitle>
           <p className="text-sm text-[var(--muted)]">
-            Use os filtros abaixo para personalizar os gráficos interativos. Clique em "Aplicar" para atualizar os dados.
+            Ajuste os filtros para focar nos dados que mais importam para você
           </p>
         </CardHeader>
         <CardContent>
@@ -409,7 +409,7 @@ export function Dashboard() {
           {/* Documentos por Tipo - Interativo */}
           <InteractiveChart
             title="Documentos por Tipo"
-            description="Quantidade de cada tipo de documento processado. Clique nas barras para ver detalhes por score."
+            description="Quantidade de cada tipo processado. Clique nas barras para mais detalhes."
             data={dashboardData.documentsByType}
             type="bar"
             onDrillDown={handleDrillDown}
@@ -418,7 +418,7 @@ export function Dashboard() {
           {/* Tarefas por Status - Interativo */}
           <InteractiveChart
             title="Tarefas por Status"
-            description="Distribuição das tarefas por situação atual. Clique nas fatias para ver por responsável."
+            description="Situação atual das tarefas. Clique nas fatias para ver detalhes."
             data={dashboardData.tasksByStatus}
             type="pie"
             onDrillDown={handleDrillDown}
@@ -430,8 +430,8 @@ export function Dashboard() {
       {dashboardData && (
         <div className="mb-6">
           <InteractiveChart
-            title="Volume de Documentos Processados"
-            description="Evolução da quantidade de documentos processados ao longo do tempo. Linha crescente indica maior produtividade."
+            title="Volume de Processamento"
+            description="Evolução do volume processado ao longo do tempo. Linha crescente = maior produtividade."
             data={dashboardData.processingTrend}
             type="line"
             onDrillDown={handleDrillDown}
