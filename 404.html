@@ -14,15 +14,29 @@
       (function() {
         var base = '/Intelligent-Screening-Prototype/';
         var l = window.location;
+        
+        // Se já estamos na base, não fazer nada
+        if (l.pathname === base) {
+          return;
+        }
+        
+        // Se não começa com base, redirecionar para base
         if (!l.pathname.startsWith(base)) {
           l.replace(base);
           return;
         }
-        var relative = '/' + l.pathname.slice(base.length) + l.search + l.hash;
+        
+        // Extrair o caminho relativo
+        var relative = l.pathname.slice(base.length - 1) + l.search + l.hash;
+        if (!relative.startsWith('/')) {
+          relative = '/' + relative;
+        }
+        
+        // Salvar no sessionStorage e redirecionar
         sessionStorage.setItem('gh:redirect', relative);
         l.replace(base);
       })();
     </script>
   </body>
-  </html>
+</html>
 
