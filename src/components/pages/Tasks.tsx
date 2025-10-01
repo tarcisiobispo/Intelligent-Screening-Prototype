@@ -227,7 +227,7 @@ function TaskCard({ task }: { task: Task }) {
   const isOverdue = new Date(task.dueDate) < new Date() && task.status !== 'done';
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="hover:shadow-md transition-shadow">
       <CardContent className="pt-4">
         <div className="space-y-3">
           <div>

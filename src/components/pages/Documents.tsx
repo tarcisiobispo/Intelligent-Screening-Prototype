@@ -19,6 +19,7 @@ import {
   FileText,
   Star,
   Bookmark,
+  Plus,
 } from 'lucide-react';
 import { mockApi, type Document } from '../../lib/mockApi';
 import { navigate } from '../../lib/navigation';
@@ -293,14 +294,28 @@ export function Documents() {
                       <div className="text-sm text-[var(--muted)]">
                         {doc.status === 'pending' ? 'Pendente de revisão' : 'Revisado'}
                       </div>
-                      <Button
-                        size="sm"
-                        className="gap-2 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
-                        onClick={() => navigate(`/documents/${doc.id}`)}
-                      >
-                        <Eye className="w-4 h-4" />
-                        Revisar
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={() => {
+                            // TODO: Abrir modal de criar tarefa
+                            console.log('Criar tarefa para:', doc.id);
+                          }}
+                        >
+                          <Plus className="w-4 h-4" />
+                          Criar Tarefa
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gap-2 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
+                          onClick={() => navigate(`/documents/${doc.id}`)}
+                        >
+                          <Eye className="w-4 h-4" />
+                          Revisar
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
