@@ -95,7 +95,7 @@ export function Dashboard() {
       badge: 'Crítico',
     },
     {
-      title: 'Baixa Confiança OCR',
+      title: 'OCR Inexato',
       value: stats?.lowConfidence,
       icon: Eye,
       color: 'orange-500',
@@ -149,83 +149,85 @@ export function Dashboard() {
       </Alert>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpiCards.map((kpi) => {
           const Icon = kpi.icon;
           return (
             <Card
               key={kpi.title}
-              className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+              className="hover:shadow-lg transition-shadow duration-200 cursor-pointer h-28"
               onClick={() => {
                 let path = '';
                 if (kpi.title === 'Total de Documentos') path = '/documents';
                 else if (kpi.title === 'Pendentes de Revisão') path = '/documents';
                 else if (kpi.title === 'Alta Prioridade') path = '/tasks';
-                else if (kpi.title === 'Baixa Confiança OCR') path = '/documents';
+                else if (kpi.title === 'OCR Inexato') path = '/documents';
 
                 if (path) navigate(path);
               }}
             >
-              <CardContent className="p-6">
-                {/* Container principal para Título/Valor/Rodapé (Esquerda) e Ícone (Direita) */}
-                <div className="flex items-start justify-between">
+              <CardContent className="p-3 h-full flex flex-col justify-between">
+                {/* Subgrupo Principal */}
+                <div className="flex items-center">
+                  {/* Ícone Grande à Esquerda */}
+                  <div
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${kpi.color}15` }}
+                  >
+                    <Icon className="w-6 h-6 sm:w-6 sm:h-6" style={{ color: kpi.color }} />
+                  </div>
 
-                  <div className="flex-1 flex flex-col justify-start">
-
-                    {/* Título Flowbite: Compacto com mb-2 (8px) para o valor */}
-                    <h4 className="text-sm font-medium text-[var(--muted)] uppercase tracking-wider mb-2">
+                  {/* Conteúdo ao Lado */}
+                  <div className="flex flex-col flex-1 gap-0.5 min-w-0">
+                    <h4 className="text-sm sm:text-sm font-medium text-[var(--muted)] leading-tight">
                       {kpi.title}
                     </h4>
-
-                    {/* Valor Principal: Alinhado abaixo do título */}
-                    <div className="flex items-baseline gap-2 mb-4">
-                      <span className="text-3xl font-extrabold text-[var(--text)]">
+                    <div className="flex justify-end">
+                      <span className="text-lg sm:text-xl lg:text-2xl font-bold text-[var(--text)] leading-none">
                         {kpi.value}
                       </span>
                     </div>
-
-                    {/* Métrica de Rodapé: Separada por mt-4 (16px) ou mt-2 (8px) */}
-                    {kpi.trend && (
-                      <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium mt-4">
-                        <TrendingUp className="w-3.5 h-3.5" />
-                        <span>{kpi.trend} vs semana passada</span>
-                      </div>
-                    )}
-
-                    {kpi.badge && (
-                      <Badge
-                        variant="secondary"
-                        className="text-xs font-medium mt-2"
-                        style={{
-                          backgroundColor: `${kpi.color}15`,
-                          color: kpi.color,
-                          border: 'none'
-                        }}
-                      >
-                        {kpi.badge}
-                      </Badge>
-                    )}
-
-                    {kpi.action && (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="mt-2 p-0 h-auto text-xs text-[var(--primary)] hover:text-[var(--primary-700)] font-medium"
-                      >
-                        {kpi.action} <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
-                    )}
                   </div>
-
-                  {/* Coluna 2: Ícone, alinhado ao topo (items-start do flex container) */}
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${kpi.color}10` }}
-                  >
-                    <Icon className="w-6 h-6" style={{ color: kpi.color }} />
-                  </div>
-
                 </div>
+                
+                {/* Linha Separadora + Rodapé */}
+                {(kpi.trend || kpi.badge || kpi.action) && (
+                  <>
+                    <div className="border-t border-[var(--border)] mb-1"></div>
+                    <div className="text-xs flex justify-center">
+                      {kpi.trend && (
+                        <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium">
+                          <TrendingUp className="w-3 h-3" />
+                          <span className="truncate">{kpi.trend} vs semana</span>
+                        </div>
+                      )}
+
+                      {kpi.badge && (
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-medium w-fit"
+                          style={{
+                            backgroundColor: `${kpi.color}15`,
+                            color: kpi.color,
+                            border: 'none'
+                          }}
+                        >
+                          {kpi.badge}
+                        </Badge>
+                      )}
+
+                      {kpi.action && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="p-0 h-auto text-xs text-[var(--primary)] hover:text-[var(--primary-700)] font-medium"
+                        >
+                          {kpi.action} <ArrowRight className="w-1.5 h-1.5 ml-1" />
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           );
