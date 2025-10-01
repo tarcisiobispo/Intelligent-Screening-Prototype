@@ -82,7 +82,7 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
         <div key={index} className="space-y-2">
           <div className="flex justify-between items-center text-sm">
             <span className="font-medium truncate flex-1 mr-2">{point.label}</span>
-            <span className="text-[var(--muted)] font-mono text-xs">{point.value.toLocaleString()}</span>
+            <span className="text-[var(--muted)] font-mono text-sm font-semibold">{point.value.toLocaleString()}</span>
           </div>
           <div 
             className="relative h-7 bg-[var(--border)] rounded-md cursor-pointer transition-all hover:shadow-sm"
@@ -147,8 +147,8 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center bg-white/20 backdrop-blur-sm rounded-full px-3 py-2">
-              <div className="text-lg font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{total.toLocaleString()}</div>
-              <div className="text-xs text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Total</div>
+              <div className="text-xl font-bold text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>{total.toLocaleString()}</div>
+              <div className="text-sm text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Total</div>
             </div>
           </div>
         </div>
@@ -161,8 +161,8 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
               />
               <span className="flex-1 truncate text-[var(--foreground)]">{point.label}</span>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="font-medium font-mono text-xs text-[var(--foreground)]">{point.value.toLocaleString()}</span>
-                <span className="text-[var(--muted)] text-xs min-w-[40px] text-right">
+                <span className="font-medium font-mono text-sm font-semibold text-[var(--foreground)]">{point.value.toLocaleString()}</span>
+                <span className="text-[var(--muted)] text-sm font-medium min-w-[40px] text-right">
                   {Math.round((point.value / total) * 100)}%
                 </span>
               </div>
@@ -244,7 +244,7 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
                   x={point.x + padding.left}
                   y={point.y + padding.top - 15}
                   textAnchor="middle"
-                  className="text-xs font-medium fill-[var(--foreground)]"
+                  className="text-sm font-bold fill-[var(--foreground)]"
                 >
                   {point.value}
                 </text>
@@ -258,7 +258,7 @@ export function InteractiveChart({ title, description, data, type, onDrillDown, 
           {currentData.map((point, index) => (
             <span 
               key={index} 
-              className="text-xs text-[var(--muted)] text-center max-w-[60px] truncate"
+              className="text-sm font-medium text-[var(--muted)] text-center max-w-[60px] truncate"
               style={{ transform: 'rotate(-45deg)', transformOrigin: 'center top' }}
             >
               {point.label}
