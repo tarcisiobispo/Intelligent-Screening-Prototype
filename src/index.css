@@ -2941,21 +2941,43 @@
 
 
 :root {
-  --primary: #005b8f;
-  --primary-700: #00456d;
-  --primary-300: #4fa3d9;
-  --accent: #ff8a00;
-  --danger: #d64545;
-  --success: #2ecc71;
-  --warning: #f6c85f;
-  --bg: #f8fafc;
-  --surface: #fff;
-  --text: #0f172a;
-  --muted: #64748b;
-  --border: #0f172a14;
-  --shadow: 0 6px 18px #0f172a0f;
-  --radius: 10px;
+  --primary: #005B8F;
+  --primary-700: #00456D;
+  --primary-300: #4FA3D9;
+  --accent: #FF8A00;
+  --danger: #D64545;
+  --success: #2ECC71;
+  --warning: #F6C85F;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --text: #0F172A;
+  --muted: #64748B;
+  --border: #E2E8F0;
+  
+  /* Sistema de espaçamento */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
   --spacing: 8px;
+  
+  /* Sistema de radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius: 10px;
+  
+  /* Sistema de sombras */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 6px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 6px 18px rgba(15, 23, 42, 0.06);
+  --shadow-xl: 0 20px 25px rgba(15, 23, 42, 0.1);
+  --shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
   --background: var(--bg);
   --foreground: var(--text);
   --card: var(--surface);

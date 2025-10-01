@@ -179,11 +179,13 @@
   --danger: #D64545;
   --warning: #F6C85F;
   --accent: #FF8A00;
-  --muted: #64748B;
-  --text: #1E293B;
-  --bg: #F8FAFC;
+
+  --muted: #6B7280;
+  --text: #111827;
+  --bg: #F9FAFB;
   --surface: #FFFFFF;
-  --border: #E2E8F0;
+  --border: #E5E7EB;
+
   /* shadcn/ui tokens */
   --card: #FFFFFF;
   --card-foreground: #1E293B;
@@ -201,18 +203,20 @@
   --foreground: #1E293B;
 }
 
-[data-theme='dark'], .dark {
+[data-theme='dark'],
+.dark {
   --primary: #4FA3D9;
   --primary-700: #005B8F;
   --success: #2ECC71;
   --danger: #D64545;
   --warning: #F6C85F;
   --accent: #FF8A00;
-  --muted: #94A3B8;
-  --text: #F1F5F9;
-  --bg: #0F172A;
-  --surface: #1E293B;
-  --border: #334155;
+
+  --muted: #9CA3AF;
+  --text: #F9FAFB;
+  --bg: #111827;
+  --surface: #1F2937;
+  --border: #374151;
 }
 
 /* Custom scrollbar */

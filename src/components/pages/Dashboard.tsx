@@ -162,25 +162,36 @@ export function Dashboard() {
                 else if (kpi.title === 'Pendentes de Revisão') path = '/documents';
                 else if (kpi.title === 'Alta Prioridade') path = '/tasks';
                 else if (kpi.title === 'Baixa Confiança OCR') path = '/documents';
-                
+
                 if (path) navigate(path);
               }}
             >
               <CardContent className="p-6">
+                {/* Container principal para Título/Valor/Rodapé (Esquerda) e Ícone (Direita) */}
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-xl font-medium text-[var(--muted)] uppercase tracking-wider mb-3">
+
+                  <div className="flex-1 flex flex-col justify-start">
+
+                    {/* Título Flowbite: Compacto com mb-2 (8px) para o valor */}
+                    <h4 className="text-sm font-medium text-[var(--muted)] uppercase tracking-wider mb-2">
                       {kpi.title}
-                    </p>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-3xl font-bold text-[var(--text)]">{kpi.value}</span>
+                    </h4>
+
+                    {/* Valor Principal: Alinhado abaixo do título */}
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <span className="text-3xl font-extrabold text-[var(--text)]">
+                        {kpi.value}
+                      </span>
                     </div>
+
+                    {/* Métrica de Rodapé: Separada por mt-4 (16px) ou mt-2 (8px) */}
                     {kpi.trend && (
-                      <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium">
+                      <div className="flex items-center gap-1 text-xs text-[var(--success)] font-medium mt-4">
                         <TrendingUp className="w-3.5 h-3.5" />
                         <span>{kpi.trend} vs semana passada</span>
                       </div>
                     )}
+
                     {kpi.badge && (
                       <Badge
                         variant="secondary"
@@ -194,6 +205,7 @@ export function Dashboard() {
                         {kpi.badge}
                       </Badge>
                     )}
+
                     {kpi.action && (
                       <Button
                         variant="link"
@@ -204,12 +216,15 @@ export function Dashboard() {
                       </Button>
                     )}
                   </div>
+
+                  {/* Coluna 2: Ícone, alinhado ao topo (items-start do flex container) */}
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${kpi.color}10` }}
                   >
                     <Icon className="w-6 h-6" style={{ color: kpi.color }} />
                   </div>
+
                 </div>
               </CardContent>
             </Card>
