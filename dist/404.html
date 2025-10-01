@@ -4,39 +4,16 @@
     <meta charset="utf-8" />
     <title>Redirecting...</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      sessionStorage.setItem('gh:redirect', location.pathname.slice('/Intelligent-Screening-Prototype'.length) + location.search + location.hash);
+      location.replace('/Intelligent-Screening-Prototype/');
+    </script>
   </head>
   <body>
     <noscript>
       <p>Habilite JavaScript para usar este aplicativo.</p>
       <a href="/Intelligent-Screening-Prototype/">Voltar ao início</a>
     </noscript>
-    <script>
-      (function() {
-        var base = '/Intelligent-Screening-Prototype/';
-        var l = window.location;
-        
-        // Se já estamos na base, não fazer nada
-        if (l.pathname === base) {
-          return;
-        }
-        
-        // Se não começa com base, redirecionar para base
-        if (!l.pathname.startsWith(base)) {
-          l.replace(base);
-          return;
-        }
-        
-        // Extrair o caminho relativo
-        var relative = l.pathname.slice(base.length - 1) + l.search + l.hash;
-        if (!relative.startsWith('/')) {
-          relative = '/' + relative;
-        }
-        
-        // Salvar no sessionStorage e redirecionar
-        sessionStorage.setItem('gh:redirect', relative);
-        l.replace(base);
-      })();
-    </script>
   </body>
 </html>
 
