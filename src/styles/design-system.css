@@ -1,0 +1,119 @@
+/* Sistema de Design - Classes CSS */
+
+/* Tipografia Hierárquica */
+.ds-h1 { @apply text-3xl font-bold leading-tight tracking-tight text-[var(--text)]; }
+.ds-h2 { @apply text-2xl font-bold leading-tight text-[var(--text)]; }
+.ds-h3 { @apply text-xl font-semibold leading-snug text-[var(--text)]; }
+.ds-h4 { @apply text-lg font-semibold text-[var(--text)]; }
+.ds-h5 { @apply text-base font-semibold text-[var(--text)]; }
+
+.ds-body { @apply text-sm leading-relaxed text-[var(--text)]; }
+.ds-body-lg { @apply text-base leading-relaxed text-[var(--text)]; }
+.ds-body-sm { @apply text-xs leading-normal text-[var(--text)]; }
+
+.ds-caption { @apply text-xs text-[var(--muted)] uppercase tracking-wide font-medium; }
+.ds-label { @apply text-sm font-medium text-[var(--text)]; }
+
+/* Espaçamentos Padronizados */
+.ds-space-xs { @apply p-1; }
+.ds-space-sm { @apply p-2; }
+.ds-space-md { @apply p-3; }
+.ds-space-lg { @apply p-4; }
+.ds-space-xl { @apply p-6; }
+.ds-space-2xl { @apply p-8; }
+
+/* Componentes Base */
+.ds-button {
+  @apply inline-flex items-center justify-center rounded-md font-medium transition-colors;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  @apply disabled:pointer-events-none disabled:opacity-50;
+}
+
+.ds-button-primary {
+  @apply bg-[var(--primary)] text-white hover:bg-[var(--primary-700)];
+  @apply focus-visible:ring-[var(--primary)];
+}
+
+.ds-button-secondary {
+  @apply bg-[var(--secondary)] text-white hover:bg-[var(--secondary-600)];
+  @apply focus-visible:ring-[var(--secondary)];
+}
+
+.ds-button-outline {
+  @apply border border-[var(--border)] bg-transparent hover:bg-[var(--neutral-50)];
+  @apply focus-visible:ring-[var(--primary)];
+}
+
+.ds-button-sm { @apply h-8 px-3 text-xs; }
+.ds-button-md { @apply h-10 px-4 text-sm; }
+.ds-button-lg { @apply h-12 px-6 text-base; }
+
+.ds-card {
+  @apply rounded-lg border border-[var(--border)] bg-[var(--surface)] shadow-sm;
+}
+
+.ds-input {
+  @apply flex h-10 w-full rounded-md border border-[var(--border)] bg-[var(--surface)];
+  @apply px-3 py-2 text-sm placeholder:text-[var(--muted)];
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)];
+  @apply focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.ds-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+.ds-badge-default { @apply bg-[var(--neutral-100)] text-[var(--neutral-800)]; }
+.ds-badge-primary { @apply bg-[var(--primary)] text-white; }
+.ds-badge-success { @apply bg-green-100 text-green-800; }
+.ds-badge-error { @apply bg-red-100 text-red-800; }
+.ds-badge-warning { @apply bg-yellow-100 text-yellow-800; }
+
+/* Estados de Validação */
+.ds-input-error {
+  @apply border-[var(--danger)] focus-visible:ring-[var(--danger)];
+}
+
+.ds-input-success {
+  @apply border-[var(--success)] focus-visible:ring-[var(--success)];
+}
+
+/* Layout Containers */
+.ds-container {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.ds-section {
+  @apply py-12 lg:py-16;
+}
+
+.ds-grid {
+  @apply grid gap-6;
+}
+
+.ds-flex-center {
+  @apply flex items-center justify-center;
+}
+
+.ds-flex-between {
+  @apply flex items-center justify-between;
+}
+
+/* Shadows Padronizadas */
+.ds-shadow-sm { @apply shadow-sm; }
+.ds-shadow-md { @apply shadow-md; }
+.ds-shadow-lg { @apply shadow-lg; }
+
+/* Bordas Padronizadas */
+.ds-border { @apply border border-[var(--border)]; }
+.ds-border-t { @apply border-t border-[var(--border)]; }
+.ds-border-b { @apply border-b border-[var(--border)]; }
+
+/* Estados Interativos */
+.ds-hover-lift {
+  @apply transition-transform hover:scale-105;
+}
+
+.ds-hover-shadow {
+  @apply transition-shadow hover:shadow-lg;
+}
