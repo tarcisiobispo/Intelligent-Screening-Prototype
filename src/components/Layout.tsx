@@ -54,11 +54,11 @@ const withBase = (p: string) => new URL(p.replace(/^\//, ''), ORIGIN_BASE).pathn
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', path: withBase('/dashboard'), icon: LayoutDashboard },
   { id: 'documents', label: 'Documentos', path: withBase('/documents'), icon: FileText },
-  { id: 'upload', label: 'Upload', path: withBase('/upload'), icon: Upload },
+  { id: 'upload', label: 'Envio', path: withBase('/upload'), icon: Upload },
   { id: 'tasks', label: 'Tarefas', path: withBase('/tasks'), icon: CheckSquare },
   { id: 'monitoring', label: 'Monitoramento', path: withBase('/monitoring'), icon: Activity },
   { id: 'logs', label: 'Logs', path: withBase('/logs'), icon: FileCode },
-  { id: 'admin', label: 'Admin', path: withBase('/admin'), icon: Settings },
+  { id: 'admin', label: 'Administração', path: withBase('/admin'), icon: Settings },
   { id: 'help', label: 'Ajuda', path: withBase('/help'), icon: HelpCircle },
 ];
 
