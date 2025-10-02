@@ -171,36 +171,36 @@
   }
 }
 
-/* Variáveis de tema para compatibilidade com utilitários customizados */
+/* Variáveis de tema com contraste WCAG 2.1 AA (4.5:1) */
 :root {
-  --primary: #005B8F;
-  --primary-700: #00395a;
-  --success: #2ECC71;
-  --danger: #D64545;
-  --warning: #F6C85F;
-  --accent: #FF8A00;
+  --primary: #003D5C;
+  --primary-700: #002A3F;
+  --success: #0F7B0F;
+  --danger: #B91C1C;
+  --warning: #D97706;
+  --accent: #EA580C;
 
-  --muted: #6B7280;
-  --text: #111827;
-  --bg: #F9FAFB;
+  --muted: #4B5563;
+  --text: #0F172A;
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --border: #E5E7EB;
+  --border: #D1D5DB;
 
   /* shadcn/ui tokens */
   --card: #FFFFFF;
-  --card-foreground: #1E293B;
-  --input-background: #F8FAFC;
-  --input: #E2E8F0;
-  --muted-foreground: #64748B;
+  --card-foreground: #0F172A;
+  --input-background: #FFFFFF;
+  --input: #D1D5DB;
+  --muted-foreground: #4B5563;
   --primary-foreground: #FFFFFF;
-  --secondary: #F6C85F;
-  --secondary-foreground: #1E293B;
+  --secondary: #D97706;
+  --secondary-foreground: #FFFFFF;
   --accent-foreground: #FFFFFF;
-  --destructive: #D64545;
+  --destructive: #B91C1C;
   --destructive-foreground: #FFFFFF;
-  --ring: #005B8F;
-  --background: #F8FAFC;
-  --foreground: #1E293B;
+  --ring: #003D5C;
+  --background: #FFFFFF;
+  --foreground: #0F172A;
 }
 
 [data-theme='dark'],
@@ -308,9 +308,24 @@ button.hover\:bg-\[var\(--accent\)\]:hover svg {
 }
 
 .text-red-500 {
-  color: #ef4444 !important;
+  color: #B91C1C !important;
 }
 
 .text-green-500 {
-  color: #22c55e !important;
+  color: #0F7B0F !important;
+}
+
+/* Contraste adequado para todos os elementos */
+::placeholder {
+  color: var(--muted) !important;
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px;
+}
+
+button {
+  font-weight: 500;
 }
