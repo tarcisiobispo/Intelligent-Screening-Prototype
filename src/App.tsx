@@ -13,6 +13,9 @@ import { Help } from './components/pages/Help';
 import { Logs } from './components/pages/Logs';
 import { Login } from './components/pages/Login';
 import { Monitoring } from './components/pages/Monitoring';
+import { NotFound } from './components/pages/NotFound';
+import { Error } from './components/pages/Error';
+import { Maintenance } from './components/pages/Maintenance';
 import { Layout } from './components/Layout';
 import { Toaster } from './components/ui/sonner';
 import { toAbsolute, replace } from './lib/navigation';
@@ -173,13 +176,26 @@ function Router() {
         component = <Notifications />;
         breadcrumbs = [];
         break;
+      case '/404':
+      case '/not-found':
+        page = '404';
+        component = <NotFound />;
+        breadcrumbs = [];
+        break;
+      case '/error':
+        page = 'error';
+        component = <Error />;
+        breadcrumbs = [];
+        break;
+      case '/maintenance':
+        page = 'maintenance';
+        component = <Maintenance />;
+        breadcrumbs = [];
+        break;
       default:
-        // Unknown route - redireciona para dashboard
-        if (effectivePath !== '/dashboard') {
-          replace('/dashboard');
-        }
-        page = 'dashboard';
-        component = <Dashboard />;
+        // Unknown route - mostra 404
+        page = '404';
+        component = <NotFound />;
         breadcrumbs = [];
         break;
     }
