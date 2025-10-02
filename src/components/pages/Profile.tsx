@@ -131,11 +131,11 @@ export function Profile() {
           <CardHeader>
             <CardTitle>Estatísticas</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="grid grid-cols-2 gap-3">
             {stats.map((stat, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <span className="text-sm text-[var(--muted)]">{stat.label}</span>
-                <span className="font-semibold">{stat.value}</span>
+              <div key={index} className="text-center p-3 bg-[var(--bg)] rounded-lg">
+                <div className="text-2xl font-bold text-[var(--text)] mb-1">{stat.value}</div>
+                <div className="text-xs text-[var(--muted)]">{stat.label}</div>
               </div>
             ))}
           </CardContent>
