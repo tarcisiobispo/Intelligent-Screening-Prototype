@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { ValidatedInput } from '../ui/validated-input';
 import { useAuth } from '../../lib/auth';
 import { validationRules, ValidationResult } from '../../lib/validation';
+import { getErrorMessage } from '../../lib/error-messages';
 import {
   Eye,
   EyeOff,
@@ -35,6 +36,13 @@ export function Login() {
   const [error, setError] = useState('');
   const [emailValid, setEmailValid] = useState(false);
   const [passwordValid, setPasswordValid] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  
+  const emailError = emailTouched && !emailValid && email.length > 0;
+  const passwordError = passwordTouched && !passwordValid && password.length > 0;
+  const emailSuccess = emailTouched && emailValid;
+  const passwordSuccess = passwordTouched && passwordValid;
 
   // Load remembered email
   useEffect(() => {
@@ -186,57 +194,77 @@ export function Login() {
                 )}
 
                 {/* Email Field */}
-                <div className="relative">
-                  <Mail className="absolute left-3 top-[38px] -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
-                  <ValidatedInput
-                    label="Email"
-                    value={email}
-                    onChange={setEmail}
-                    onValidation={(result: ValidationResult) => setEmailValid(result.isValid)}
-                    rules={validationRules.email}
-                    placeholder="seu@email.com"
-                    type="email"
-                    className="pl-10"
-                    disabled={loading}
-                  />
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailValid(e.target.value.includes('@') && e.target.value.length > 3);
+                      }}
+                      onBlur={() => setEmailTouched(true)}
+                      className={`pl-10 pr-10 ${
+                        emailError ? 'border-red-500 focus:border-red-500' : 
+                        emailSuccess ? 'border-green-500 focus:border-green-500' : ''
+                      }`}
+                      disabled={loading}
+                    />
+                    {emailTouched && email.length > 0 && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {emailValid ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {emailError && (
+                    <p className="text-xs text-red-500">Email inválido</p>
+                  )}
                 </div>
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Senha</Label>
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="sm"
-                      onClick={handleForgotPassword}
-                      className="p-0 h-auto text-xs text-[var(--primary)]"
-                    >
-                      Esqueceu a senha?
-                    </Button>
-                  </div>
+                  <Label htmlFor="password">Senha</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordValid(e.target.value.length >= 6);
+                      }}
                       onBlur={() => setPasswordTouched(true)}
-                      className={`pl-10 pr-10 ${passwordError ? 'border-[var(--danger)]' : ''}`}
+                      className={`pl-10 pr-16 ${
+                        passwordError ? 'border-red-500 focus:border-red-500' : 
+                        passwordSuccess ? 'border-green-500 focus:border-green-500' : ''
+                      }`}
                       disabled={loading}
-                      autoComplete="current-password"
-                      aria-label="Senha"
-                      aria-describedby={passwordError ? 'password-error' : undefined}
-                      aria-invalid={!!passwordError}
                     />
+                    {passwordTouched && password.length > 0 && (
+                      <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                        {passwordValid ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500" />
+                        )}
+                      </div>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
                       aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                     >
                       {showPassword ? (
@@ -247,26 +275,35 @@ export function Login() {
                     </Button>
                   </div>
                   {passwordError && (
-                    <p id="password-error" className="text-xs text-[var(--danger)]" role="alert">
-                      {passwordError}
-                    </p>
+                    <p className="text-xs text-red-500">Mínimo 6 caracteres</p>
                   )}
                 </div>
 
-                {/* Remember Me */}
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked: boolean | undefined) => setRememberMe(!!checked)}
-                    disabled={loading}
-                  />
-                  <Label
-                    htmlFor="remember"
-                    className="text-sm font-normal cursor-pointer"
+                {/* Remember Me and Forgot Password */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked: boolean | undefined) => setRememberMe(!!checked)}
+                      disabled={loading}
+                    />
+                    <Label
+                      htmlFor="remember"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Lembrar-me
+                    </Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    onClick={handleForgotPassword}
+                    className="p-0 h-auto text-xs text-[var(--primary)] hover:underline"
                   >
-                    Lembrar-me neste dispositivo
-                  </Label>
+                    Esqueceu a senha?
+                  </Button>
                 </div>
 
                 {/* Submit Button */}

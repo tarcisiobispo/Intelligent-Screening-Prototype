@@ -9,43 +9,48 @@ export interface ValidationRule {
 export interface ValidationResult {
   isValid: boolean;
   error: string | null;
+  message: string;
 }
 
 export function validateField(value: string, rules: ValidationRule): ValidationResult {
   // Required validation
   if (rules.required && (!value || value.trim() === '')) {
-    return { isValid: false, error: 'Este campo é obrigatório' };
+    const message = 'Este campo é obrigatório';
+    return { isValid: false, error: message, message };
   }
 
   // Skip other validations if field is empty and not required
   if (!value && !rules.required) {
-    return { isValid: true, error: null };
+    return { isValid: true, error: null, message: '' };
   }
 
   // Min length validation
   if (rules.minLength && value.length < rules.minLength) {
-    return { isValid: false, error: `Mínimo ${rules.minLength} caracteres` };
+    const message = `Mínimo ${rules.minLength} caracteres`;
+    return { isValid: false, error: message, message };
   }
 
   // Max length validation
   if (rules.maxLength && value.length > rules.maxLength) {
-    return { isValid: false, error: `Máximo ${rules.maxLength} caracteres` };
+    const message = `Máximo ${rules.maxLength} caracteres`;
+    return { isValid: false, error: message, message };
   }
 
   // Pattern validation
   if (rules.pattern && !rules.pattern.test(value)) {
-    return { isValid: false, error: 'Formato inválido' };
+    const message = 'Formato inválido';
+    return { isValid: false, error: message, message };
   }
 
   // Custom validation
   if (rules.custom) {
     const customError = rules.custom(value);
     if (customError) {
-      return { isValid: false, error: customError };
+      return { isValid: false, error: customError, message: customError };
     }
   }
 
-  return { isValid: true, error: null };
+  return { isValid: true, error: null, message: '' };
 }
 
 export const validationRules = {
@@ -90,29 +95,23 @@ export const fileValidation = {
   validateFile: (file: File): ValidationResult => {
     // Type validation
     if (!fileValidation.allowedTypes.includes(file.type)) {
-      return { 
-        isValid: false, 
-        error: 'Tipo de arquivo não permitido. Use PDF, imagens ou documentos Word.' 
-      };
+      const message = 'Tipo de arquivo não permitido. Use PDF, imagens ou documentos Word.';
+      return { isValid: false, error: message, message };
     }
 
     // Size validation
     if (file.size > fileValidation.maxSize) {
-      return { 
-        isValid: false, 
-        error: `Arquivo muito grande. Máximo ${fileValidation.maxSize / 1024 / 1024}MB.` 
-      };
+      const message = `Arquivo muito grande. Máximo ${fileValidation.maxSize / 1024 / 1024}MB.`;
+      return { isValid: false, error: message, message };
     }
 
     // Name validation
     const invalidChars = /[<>:"/\\|?*]/;
     if (invalidChars.test(file.name)) {
-      return { 
-        isValid: false, 
-        error: 'Nome do arquivo contém caracteres inválidos.' 
-      };
+      const message = 'Nome do arquivo contém caracteres inválidos.';
+      return { isValid: false, error: message, message };
     }
 
-    return { isValid: true, error: null };
+    return { isValid: true, error: null, message: '' };
   }
 };

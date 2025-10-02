@@ -14,6 +14,7 @@ interface ValidatedInputProps {
   type?: string;
   className?: string;
   disabled?: boolean;
+  onBlur?: () => void;
 }
 
 export function ValidatedInput({
@@ -25,10 +26,11 @@ export function ValidatedInput({
   placeholder,
   type = 'text',
   className = '',
-  disabled = false
+  disabled = false,
+  onBlur
 }: ValidatedInputProps) {
   const [touched, setTouched] = useState(false);
-  const [validation, setValidation] = useState<ValidationResult>({ isValid: true, error: null });
+  const [validation, setValidation] = useState<ValidationResult>({ isValid: true, error: null, message: '' });
 
   useEffect(() => {
     const result = validateField(value, rules);
@@ -38,6 +40,7 @@ export function ValidatedInput({
 
   const handleBlur = () => {
     setTouched(true);
+    onBlur?.();
   };
 
   const showError = touched && !validation.isValid;
@@ -87,7 +90,7 @@ export function ValidatedInput({
           role="alert"
         >
           <AlertCircle className="w-3 h-3" />
-          {validation.error}
+          {validation.message || validation.error}
         </p>
       )}
       
