@@ -4,7 +4,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { ErrorState } from '../ui/error-state';
+import { EnhancedErrorState } from '../ui/enhanced-error-state';
 import { TaskCardSkeleton } from '../ui/loading-skeletons';
+import { errorMessages, getErrorMessage } from '../../lib/error-messages';
 
 import {
   Select,
@@ -30,6 +32,10 @@ import { mockApi, type Task } from '../../lib/mockApi';
 import { navigate } from '../../lib/navigation';
 import { exportToExcel, exportToPDF, sendWebhook } from '../../lib/export';
 import { toast } from 'sonner';
+import { globalProgress } from '../ui/global-progress';
+import { StatusIndicator } from '../ui/status-indicator';
+import { ContextualHelp } from '../ui/contextual-help';
+import { HelpTooltip } from '../ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,12 +60,19 @@ export function Tasks() {
   const loadTasks = async () => {
     setLoading(true);
     setError(null);
+    globalProgress.show('Carregando tarefas...');
+    
     try {
+      globalProgress.setProgress(50, 'Buscando tarefas...');
       const data = await mockApi.getTasks();
+      globalProgress.setProgress(100, 'Tarefas carregadas!');
       setTasks(data);
+      
+      setTimeout(() => globalProgress.hide(), 500);
     } catch (error) {
       console.error('Error loading tasks:', error);
-      setError('Não foi possível carregar as tarefas. Tente novamente.');
+      setError('TASKS_LOAD_FAILED');
+      globalProgress.hide();
     } finally {
       setLoading(false);
     }
@@ -112,13 +125,19 @@ export function Tasks() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Tarefas</h1>
-          <p className="text-[var(--muted)]">
-            {filteredTasks.length} tarefas encontradas • Organize seu trabalho
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-[var(--muted)]">
+              {filteredTasks.length} tarefas encontradas • Organize seu trabalho
+            </p>
+            {loading && (
+              <StatusIndicator status="loading" message="Carregando..." size="sm" />
+            )}
+          </div>
         </div>
         
         {/* Export Actions */}
         <div className="flex gap-2">
+          <ContextualHelp topic="tasks" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -186,7 +205,7 @@ export function Tasks() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4">
           <div className="flex flex-wrap gap-3">
             <div className="space-y-1 w-36">
               <label className="text-xs font-medium text-[var(--muted)]">Responsável</label>
@@ -272,22 +291,21 @@ export function Tasks() {
           ))}
         </div>
       ) : error ? (
-        <ErrorState
-          title="Ops, algo deu errado"
-          message={error}
+        <EnhancedErrorState
+          error={getErrorMessage(error)}
           onRetry={loadTasks}
         />
       ) : (
         <div className="grid md:grid-cols-3 gap-6">
           {/* To Do */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold">
                 <span>A Fazer</span>
                 <Badge variant="secondary">{tasksByStatus.todo.length}</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="p-4 pt-2 space-y-3">
               {tasksByStatus.todo.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
@@ -301,13 +319,13 @@ export function Tasks() {
 
           {/* In Progress */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold">
                 <span>Em Andamento</span>
                 <Badge variant="secondary">{tasksByStatus.in_progress.length}</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="p-4 pt-2 space-y-3">
               {tasksByStatus.in_progress.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
@@ -321,13 +339,13 @@ export function Tasks() {
 
           {/* Done */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold">
                 <span>Concluídas</span>
                 <Badge variant="secondary">{tasksByStatus.done.length}</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="p-4 pt-2 space-y-3">
               {tasksByStatus.done.map((task) => (
                 <TaskCard key={task.id} task={task} />
               ))}
@@ -367,7 +385,7 @@ function TaskCard({ task }: { task: Task }) {
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="pt-4">
+      <CardContent className="p-4">
         <div className="space-y-3">
           <div>
             <h4 className="mb-2">{task.title}</h4>

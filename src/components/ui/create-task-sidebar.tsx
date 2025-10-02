@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Button } from './button';
 import { Input } from './input';
 import { Badge } from './badge';
+import { ValidatedInput } from './validated-input';
 import { useToast } from './toast-provider';
+import { validationRules, ValidationResult } from '../../lib/validation';
 import {
   Select,
   SelectContent,
@@ -37,18 +39,15 @@ export function CreateTaskSidebar({ isOpen, onClose, document, selectedDocsCount
     priority: 'medium'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [titleValid, setTitleValid] = useState(false);
+  const [assigneeValid, setAssigneeValid] = useState(false);
   const toast = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title.trim()) {
-      toast.error('Título obrigatório', 'Por favor, insira um título para a tarefa');
-      return;
-    }
-    
-    if (!formData.assignee) {
-      toast.error('Responsável obrigatório', 'Por favor, selecione um responsável');
+    if (!titleValid || !assigneeValid) {
+      toast.error('Formulário inválido', 'Por favor, corrija os erros no formulário');
       return;
     }
 
@@ -202,16 +201,14 @@ export function CreateTaskSidebar({ isOpen, onClose, document, selectedDocsCount
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Título <span className="text-[var(--danger)]">*</span>
-                </label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ex: Revisar laudo técnico"
-                />
-              </div>
+              <ValidatedInput
+                label="Título"
+                value={formData.title}
+                onChange={(value) => setFormData(prev => ({ ...prev, title: value }))}
+                onValidation={(result: ValidationResult) => setTitleValid(result.isValid)}
+                rules={validationRules.taskTitle}
+                placeholder="Ex: Revisar laudo técnico"
+              />
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Descrição</label>
@@ -223,19 +220,17 @@ export function CreateTaskSidebar({ isOpen, onClose, document, selectedDocsCount
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Responsável <span className="text-[var(--danger)]">*</span>
-                </label>
-                <div className="relative">
-                  <Input
-                    value={formData.assignee}
-                    onChange={(e) => setFormData(prev => ({ ...prev, assignee: e.target.value }))}
-                    placeholder="Digite o nome do responsável"
-                    className="pl-10"
-                  />
-                  <User className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--muted)]" />
-                </div>
+              <div className="relative">
+                <User className="w-4 h-4 absolute left-3 top-[38px] transform -translate-y-1/2 text-[var(--muted)] z-10" />
+                <ValidatedInput
+                  label="Responsável"
+                  value={formData.assignee}
+                  onChange={(value) => setFormData(prev => ({ ...prev, assignee: value }))}
+                  onValidation={(result: ValidationResult) => setAssigneeValid(result.isValid)}
+                  rules={validationRules.assignee}
+                  placeholder="Digite o nome do responsável"
+                  className="pl-10"
+                />
               </div>
 
               <div className="space-y-2">
@@ -292,7 +287,15 @@ export function CreateTaskSidebar({ isOpen, onClose, document, selectedDocsCount
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={() => {
+                  if (formData.title || formData.description || formData.assignee) {
+                    if (confirm('Descartar alterações? Todos os dados não salvos serão perdidos.')) {
+                      onClose();
+                    }
+                  } else {
+                    onClose();
+                  }
+                }}
                 disabled={isSubmitting}
                 className="flex-1"
               >
@@ -300,7 +303,7 @@ export function CreateTaskSidebar({ isOpen, onClose, document, selectedDocsCount
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !titleValid || !assigneeValid}
                 className="flex-1 bg-[var(--primary)] hover:bg-[var(--primary-700)]"
               >
                 {isSubmitting ? 'Criando...' : 'Criar Tarefa'}

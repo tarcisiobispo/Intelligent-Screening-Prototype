@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Upload,
@@ -15,6 +15,8 @@ import {
   Bell,
   Home,
 } from 'lucide-react';
+import { GlobalProgress } from './ui/global-progress';
+import { StatusIndicator } from './ui/status-indicator';
 import { useAuth } from '../lib/auth';
 import { Button } from './ui/button';
 import { navigate } from '../lib/navigation';
@@ -67,6 +69,20 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [globalProgressState, setGlobalProgressState] = useState({
+    isVisible: false,
+    progress: 0,
+    message: ''
+  });
+
+  useEffect(() => {
+    const handleGlobalProgress = (event: CustomEvent) => {
+      setGlobalProgressState(event.detail);
+    };
+
+    window.addEventListener('globalProgress', handleGlobalProgress as EventListener);
+    return () => window.removeEventListener('globalProgress', handleGlobalProgress as EventListener);
+  }, []);
 
   // Mock notifications data
   const [notifications] = useState([
@@ -96,8 +112,19 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
     },
   ]);
 
+  const getPageStatus = () => {
+    const currentMenuItem = menuItems.find(item => item.id === currentPage);
+    return currentMenuItem ? 'success' : 'idle';
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg)] transition-colors duration-200 lg:flex lg:flex-row">
+      {/* Global Progress Bar */}
+      <GlobalProgress 
+        isVisible={globalProgressState.isVisible}
+        progress={globalProgressState.progress}
+        message={globalProgressState.message}
+      />
       {/* Sidebar */}
       <aside
         className={`sidebar${sidebarExpanded ? ' sidebar--expanded' : ''} bg-[var(--surface)] border-r border-[var(--border)] z-50 transition-all duration-200 ease-in-out${sidebarOpen ? ' fixed top-0 left-0 h-full w-full' : ' hidden'} lg:static lg:block lg:h-auto shadow-[var(--shadow)]`}
@@ -122,7 +149,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
             </button>
           </div>
           {/* Navigation */}
-          <nav className="flex-1 px-2 py-4 overflow-y-auto">
+          <nav className="flex-1 px-2 py-4 overflow-y-auto" role="navigation" aria-label="Navegação principal">
             <ul className="space-y-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
@@ -131,11 +158,12 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   <li key={item.id}>
                     <a
                       href={item.path}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-150 ${isActive ? 'bg-[var(--primary)] text-white' : 'text-[var(--text)] hover:bg-[var(--bg)]'}`}
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isActive ? 'bg-[var(--primary)] text-white' : 'text-[var(--text)] hover:bg-[var(--bg)]'}`}
                       onClick={() => setSidebarOpen(false)}
                       title={item.label}
+                      aria-current={isActive ? 'page' : undefined}
                     >
-                      <Icon className="w-5 h-5 flex-shrink-0" style={{ minWidth: '20px', minHeight: '20px' }} />
+                      <Icon className="w-5 h-5 flex-shrink-0" style={{ minWidth: '20px', minHeight: '20px' }} aria-hidden="true" />
                       <span className="font-medium sidebar-label whitespace-nowrap">{item.label}</span>
                     </a>
                   </li>
@@ -155,7 +183,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
       {/* Main content */}
       <div className={`main-content min-h-screen flex flex-col transition-all duration-200 flex-1 ${sidebarExpanded ? 'lg:ml-[256px]' : 'lg:ml-[88px]'}`}>
         {/* Topbar */}
-        <header className="h-16 bg-[var(--surface)] border-b border-[var(--border)] sticky top-0 z-30 shadow-sm">
+        <header className="h-16 bg-[var(--surface)] border-b border-[var(--border)] sticky top-0 z-30 shadow-sm" role="banner">
           <div className="h-full px-6 flex items-center justify-between gap-4">
             {/* Left section */}
             <div className="flex items-center gap-4 flex-1">
@@ -175,6 +203,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                       navigate(`/documents?search=${encodeURIComponent(searchQuery)}`);
                     }
                   }}
+                  aria-label="Buscar documentos e tarefas"
                 />
               </div>
             </div>
@@ -184,14 +213,14 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
               <Button variant="ghost" size="icon" className="md:hidden" onClick={() => {
                 const query = prompt('Buscar:');
                 if (query) navigate(`/documents?search=${encodeURIComponent(query)}`);
-              }}>
-                <Search className="w-5 h-5" />
+              }} aria-label="Buscar">
+                <Search className="w-5 h-5" aria-hidden="true" />
               </Button>
               {/* Notifications */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                    <Bell className="w-5 h-5" />
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={`Notificações${notifications.filter(n => !n.read).length > 0 ? ` (${notifications.filter(n => !n.read).length} não lidas)` : ''}`}>
+                    <Bell className="w-5 h-5" aria-hidden="true" />
                     {notifications.filter(n => !n.read).length > 0 && (
                       <Badge className="absolute top-0 right-0 w-4 h-4 p-0 flex items-center justify-center bg-[var(--danger)] text-white border-0 text-[10px] leading-none">
                         {notifications.filter(n => !n.read).length}
@@ -270,7 +299,8 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                   <DropdownMenuItem onClick={() => navigate('/admin')}>Configurações</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-[var(--danger)]" onClick={() => {
-                    if (confirm('Deseja realmente sair?')) {
+                    const shouldLogout = window.confirm('Deseja realmente sair do sistema?');
+                    if (shouldLogout) {
                       logout();
                       toast.success('Logout realizado', { description: 'Até logo!' });
                     }
@@ -280,15 +310,23 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
             </div>
           </div>
         </header>
-        {/* Breadcrumbs */}
-        {breadcrumbs.length > 0 && (
-          <div className="bg-[var(--surface)] border-b border-[var(--border)] px-4 py-3">
+        {/* Breadcrumbs with Status */}
+        <div className="bg-[var(--surface)] border-b border-[var(--border)] px-4 py-3">
+          <div className="flex items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href={withBase('/')}>
                     <Home className="w-4 h-4" />
                   </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator>
+                  <ChevronRight className="w-4 h-4" />
+                </BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="flex items-center gap-2">
+                    {menuItems.find(item => item.id === currentPage)?.label || 'Página'}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
                 {breadcrumbs.map((crumb, index) => (
                   <div key={index} className="flex items-center">
@@ -306,10 +344,19 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
+            
+            {/* Page Status Indicator */}
+            <StatusIndicator 
+              status={getPageStatus()}
+              message={currentPage === 'dashboard' ? 'Dados atualizados' : 'Página carregada'}
+              size="sm"
+            />
           </div>
-        )}
+        </div>
         {/* Page content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <div className="flex-1 p-4 md:p-6 lg:p-8" style={{ marginTop: globalProgressState.isVisible ? '60px' : '0' }}>
+          {children}
+        </div>
       </div>
     </div>
   );

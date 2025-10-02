@@ -22,12 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
+import { Tooltip, HelpTooltip } from '../ui/tooltip';
 import { FormField } from '../ui/form-field';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import { validationRules } from '../../lib/validation';
@@ -456,27 +451,17 @@ export function DocumentViewer({ documentId }: DocumentViewerProps) {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleDownload}>
-                  <Download className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Baixar documento</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip content="Baixar documento">
+            <Button variant="outline" size="icon" onClick={handleDownload}>
+              <Download className="w-4 h-4" />
+            </Button>
+          </Tooltip>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleShare}>
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Compartilhar</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip content="Compartilhar">
+            <Button variant="outline" size="icon" onClick={handleShare}>
+              <Share2 className="w-4 h-4" />
+            </Button>
+          </Tooltip>
 
           <Button variant="outline" onClick={handleSaveFields} className="gap-2">
             <Save className="w-4 h-4" />

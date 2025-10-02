@@ -8,7 +8,7 @@ export interface ValidationRule {
 
 export interface ValidationResult {
   isValid: boolean;
-  error?: string;
+  error: string | null;
 }
 
 export function validateField(value: string, rules: ValidationRule): ValidationResult {
@@ -18,24 +18,18 @@ export function validateField(value: string, rules: ValidationRule): ValidationR
   }
 
   // Skip other validations if field is empty and not required
-  if (!value || value.trim() === '') {
-    return { isValid: true };
+  if (!value && !rules.required) {
+    return { isValid: true, error: null };
   }
 
   // Min length validation
   if (rules.minLength && value.length < rules.minLength) {
-    return { 
-      isValid: false, 
-      error: `Mínimo de ${rules.minLength} caracteres` 
-    };
+    return { isValid: false, error: `Mínimo ${rules.minLength} caracteres` };
   }
 
   // Max length validation
   if (rules.maxLength && value.length > rules.maxLength) {
-    return { 
-      isValid: false, 
-      error: `Máximo de ${rules.maxLength} caracteres` 
-    };
+    return { isValid: false, error: `Máximo ${rules.maxLength} caracteres` };
   }
 
   // Pattern validation
@@ -51,47 +45,74 @@ export function validateField(value: string, rules: ValidationRule): ValidationR
     }
   }
 
-  return { isValid: true };
+  return { isValid: true, error: null };
 }
 
 export const validationRules = {
-  taskTitle: {
-    required: true,
-    minLength: 3,
-    maxLength: 100,
-  },
-  taskDescription: {
-    required: true,
-    minLength: 10,
-    maxLength: 500,
-  },
   email: {
     required: true,
     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  },
-  date: {
-    required: true,
     custom: (value: string) => {
-      const date = new Date(value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (date < today) {
-        return 'A data não pode ser anterior a hoje';
-      }
+      if (!value.includes('@')) return 'Email deve conter @';
       return null;
-    },
+    }
   },
-  fileName: {
+  password: {
     required: true,
-    minLength: 1,
-    maxLength: 255,
+    minLength: 6,
     custom: (value: string) => {
-      const invalidChars = /[<>:"/\\|?*]/;
-      if (invalidChars.test(value)) {
-        return 'Nome contém caracteres inválidos';
-      }
+      if (value.length < 6) return 'Senha deve ter pelo menos 6 caracteres';
       return null;
-    },
+    }
   },
+  taskTitle: {
+    required: true,
+    minLength: 3,
+    maxLength: 100
+  },
+  assignee: {
+    required: true,
+    minLength: 2
+  }
+};
+
+export const fileValidation = {
+  allowedTypes: [
+    'application/pdf',
+    'image/jpeg',
+    'image/jpg', 
+    'image/png',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ],
+  maxSize: 50 * 1024 * 1024, // 50MB
+  
+  validateFile: (file: File): ValidationResult => {
+    // Type validation
+    if (!fileValidation.allowedTypes.includes(file.type)) {
+      return { 
+        isValid: false, 
+        error: 'Tipo de arquivo não permitido. Use PDF, imagens ou documentos Word.' 
+      };
+    }
+
+    // Size validation
+    if (file.size > fileValidation.maxSize) {
+      return { 
+        isValid: false, 
+        error: `Arquivo muito grande. Máximo ${fileValidation.maxSize / 1024 / 1024}MB.` 
+      };
+    }
+
+    // Name validation
+    const invalidChars = /[<>:"/\\|?*]/;
+    if (invalidChars.test(file.name)) {
+      return { 
+        isValid: false, 
+        error: 'Nome do arquivo contém caracteres inválidos.' 
+      };
+    }
+
+    return { isValid: true, error: null };
+  }
 };

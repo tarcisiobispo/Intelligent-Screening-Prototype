@@ -4,12 +4,20 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { ErrorState } from '../ui/error-state';
+import { EnhancedErrorState } from '../ui/enhanced-error-state';
 import { DocumentCardSkeleton } from '../ui/loading-skeletons';
 import { toast } from 'sonner';
+import { errorMessages, getErrorMessage } from '../../lib/error-messages';
 import { SmartSearch } from '../ui/smart-search';
 import { CreateTaskSidebar } from '../ui/create-task-sidebar';
+import { ConfirmDialog } from '../ui/confirm-dialog';
 import { performSemanticSearch } from '../../lib/semanticSearch';
 import { exportToExcel, exportToPDF, sendWebhook } from '../../lib/export';
+import { undoManager } from '../../lib/undo-manager';
+import { globalProgress } from '../ui/global-progress';
+import { StatusIndicator } from '../ui/status-indicator';
+import { ContextualHelp } from '../ui/contextual-help';
+import { HelpTooltip } from '../ui/tooltip';
 
 import {
   Select,
@@ -34,6 +42,7 @@ import {
   Send,
   Calendar,
   Upload,
+  X,
 } from 'lucide-react';
 import { mockApi, type Document } from '../../lib/mockApi';
 import { navigate } from '../../lib/navigation';
@@ -60,6 +69,12 @@ export function Documents() {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showCreateTaskSidebar, setShowCreateTaskSidebar] = useState(false);
   const [selectedDocForTask, setSelectedDocForTask] = useState<Document | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
   // Using sonner toast
   const [savedFilters] = useState([
     { id: '1', name: 'Alta Prioridade', filters: { minScore: 0.7 } },
@@ -76,7 +91,10 @@ export function Documents() {
   const loadDocuments = async () => {
     setLoading(true);
     setError(null);
+    globalProgress.show('Carregando documentos...');
+    
     try {
+      globalProgress.setProgress(25, 'Aplicando filtros...');
       const filters: any = {};
 
       if (searchQuery) filters.search = searchQuery;
@@ -95,15 +113,21 @@ export function Documents() {
 
       let docs = await mockApi.getDocuments(filters);
       
+      globalProgress.setProgress(75, 'Processando busca...');
+      
       // Apply semantic search if query exists
       if (searchQuery.trim()) {
         docs = performSemanticSearch(searchQuery, docs);
       }
       
+      globalProgress.setProgress(100, 'Concluído!');
       setDocuments(docs);
+      
+      setTimeout(() => globalProgress.hide(), 500);
     } catch (error) {
       console.error('Error loading documents:', error);
-      setError('Não foi possível carregar os documentos. Tente novamente.');
+      setError('DOCUMENTS_LOAD_FAILED');
+      globalProgress.hide();
     } finally {
       setLoading(false);
     }
@@ -163,30 +187,54 @@ export function Documents() {
     setShowCreateTaskSidebar(true);
   };
 
-  const handleBulkArchive = async () => {
-    const loadingId = toast.loading('Arquivando...', `Processando ${selectedDocs.length} documentos`);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.dismiss(loadingId);
-      toast.success('Documentos arquivados!', `${selectedDocs.length} documentos foram arquivados`);
-      setSelectedDocs([]);
-    } catch (error) {
-      toast.dismiss(loadingId);
-      toast.error('Erro ao arquivar', 'Tente novamente');
-    }
+  const handleBulkArchive = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Arquivar Documentos',
+      message: `Tem certeza que deseja arquivar ${selectedDocs.length} documento${selectedDocs.length > 1 ? 's' : ''}? Esta ação pode ser desfeita.`,
+      onConfirm: async () => {
+        const originalDocs = [...selectedDocs];
+        const loadingId = toast.loading('Arquivando...', `Processando ${selectedDocs.length} documentos`);
+        
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          toast.dismiss(loadingId);
+          setSelectedDocs([]);
+          
+          // Adicionar ação de desfazer
+          undoManager.addAction(
+            `${originalDocs.length} documento${originalDocs.length > 1 ? 's' : ''} arquivado${originalDocs.length > 1 ? 's' : ''}`,
+            async () => {
+              setSelectedDocs(originalDocs);
+              await loadDocuments();
+            }
+          );
+        } catch (error) {
+          toast.dismiss(loadingId);
+          toast.error('Erro ao arquivar', 'Tente novamente');
+        }
+      }
+    });
   };
 
-  const handleBulkReprocess = async () => {
-    const loadingId = toast.loading('Reprocessando...', `OCR sendo executado em ${selectedDocs.length} documentos`);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      toast.dismiss(loadingId);
-      toast.success('Reprocessamento concluído!', `${selectedDocs.length} documentos foram reprocessados`);
-      setSelectedDocs([]);
-    } catch (error) {
-      toast.dismiss(loadingId);
-      toast.error('Erro ao reprocessar', 'Tente novamente');
-    }
+  const handleBulkReprocess = () => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Reprocessar Documentos',
+      message: `Reprocessar ${selectedDocs.length} documento${selectedDocs.length > 1 ? 's' : ''}? O OCR será executado novamente.`,
+      onConfirm: async () => {
+        const loadingId = toast.loading('Reprocessando...', `OCR sendo executado em ${selectedDocs.length} documentos`);
+        try {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          toast.dismiss(loadingId);
+          toast.success('Reprocessamento concluído!', `${selectedDocs.length} documentos foram reprocessados`);
+          setSelectedDocs([]);
+        } catch (error) {
+          toast.dismiss(loadingId);
+          toast.error('Erro ao reprocessar', 'Tente novamente');
+        }
+      }
+    });
   };
 
   return (
@@ -195,15 +243,21 @@ export function Documents() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Documentos</h1>
-          <p className="text-[var(--muted)]">
-            {documents.length} documentos encontrados
-            {searchQuery && ` para "${searchQuery}"`}
-            {!searchQuery && ` • Ordenados por prioridade`}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-[var(--muted)]">
+              {documents.length} documentos encontrados
+              {searchQuery && ` para "${searchQuery}"`}
+              {!searchQuery && ` • Ordenados por prioridade`}
+            </p>
+            {loading && (
+              <StatusIndicator status="loading" message="Carregando..." size="sm" />
+            )}
+          </div>
         </div>
         
         {/* Export Actions */}
         <div className="flex gap-2">
+          <ContextualHelp topic="documents" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -272,7 +326,7 @@ export function Documents() {
       {/* Bulk Actions Bar */}
       {selectedDocs.length > 0 && (
         <Card className="bg-[var(--primary)]/5 border-[var(--primary)]">
-          <CardContent className="pt-4">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">
@@ -295,6 +349,21 @@ export function Documents() {
                   <FileText className="w-4 h-4" />
                   Arquivar
                 </Button>
+                <Button variant="outline" size="sm" onClick={() => {
+                  const selectedDocuments = documents.filter(doc => selectedDocs.includes(doc.id));
+                  exportToExcel(selectedDocuments, 'documentos-selecionados');
+                  toast.success('Export realizado!', `${selectedDocs.length} documentos exportados`);
+                }} className="gap-2">
+                  <Download className="w-4 h-4" />
+                  Exportar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => {
+                  setSelectedDocs([]);
+                  toast.success('Seleção limpa', 'Todos os documentos desmarcados');
+                }} className="gap-2">
+                  <X className="w-4 h-4" />
+                  Limpar
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -303,7 +372,7 @@ export function Documents() {
 
       {/* Filters Bar */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-4">
           <div className="space-y-4">
             {/* Smart Search */}
             <SmartSearch
@@ -326,7 +395,9 @@ export function Documents() {
             </div>
             <div className="flex flex-wrap gap-3">
               <div className="space-y-1 w-36">
-                <label className="text-xs font-medium text-[var(--muted)]">Responsável</label>
+                <label className="text-xs font-medium text-[var(--muted)]">
+                  Responsável
+                </label>
                 <div className="relative">
                   <Input
                     value={assigneeFilter === 'todos' ? '' : assigneeFilter}
@@ -339,7 +410,9 @@ export function Documents() {
               </div>
 
               <div className="space-y-1 w-32">
-                <label className="text-xs font-medium text-[var(--muted)]">Tipo</label>
+                <label className="text-xs font-medium text-[var(--muted)]">
+                  Tipo
+                </label>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger size="sm" className="text-sm">
                     <Filter className="w-4 h-4 mr-2" />
@@ -356,7 +429,9 @@ export function Documents() {
               </div>
 
               <div className="space-y-1 w-28">
-                <label className="text-xs font-medium text-[var(--muted)]">Score</label>
+                <label className="text-xs font-medium text-[var(--muted)]">
+                  Score
+                </label>
                 <Select value={scoreFilter} onValueChange={setScoreFilter}>
                   <SelectTrigger size="sm" className="text-sm">
                     <ArrowUpDown className="w-4 h-4 mr-2" />
@@ -372,7 +447,9 @@ export function Documents() {
               </div>
 
               <div className="space-y-1 w-32">
-                <label className="text-xs font-medium text-[var(--muted)]">Data Inicial</label>
+                <label className="text-xs font-medium text-[var(--muted)]">
+                  Data Inicial
+                </label>
                 <div className="relative">
                   <Input
                     type="date"
@@ -389,7 +466,9 @@ export function Documents() {
               </div>
               
               <div className="space-y-1 w-32">
-                <label className="text-xs font-medium text-[var(--muted)]">Data Final</label>
+                <label className="text-xs font-medium text-[var(--muted)]">
+                  Data Final
+                </label>
                 <div className="relative">
                   <Input
                     type="date"
@@ -417,14 +496,13 @@ export function Documents() {
           ))}
         </div>
       ) : error ? (
-        <ErrorState
-          title="Erro ao carregar documentos"
-          message={error}
+        <EnhancedErrorState
+          error={getErrorMessage(error)}
           onRetry={loadDocuments}
         />
       ) : documents.length === 0 ? (
         <Card>
-          <CardContent className="pt-6 text-center py-12">
+          <CardContent className="p-4 text-center py-12">
             <FileText className="w-12 h-12 mx-auto mb-4 text-[var(--muted)]" />
             <p className="text-[var(--muted)]">Nenhum documento corresponde aos filtros</p>
           </CardContent>
@@ -440,7 +518,7 @@ export function Documents() {
                 key={doc.id}
                 className="hover:shadow-lg transition-shadow duration-200"
               >
-                <CardContent className="pt-6">
+                <CardContent className="p-4">
                   <div className="space-y-3">
                     {/* Header */}
                     <div className="flex items-start justify-between gap-4">
@@ -555,6 +633,15 @@ export function Documents() {
         document={selectedDocForTask || undefined}
         selectedDocsCount={selectedDocForTask ? undefined : selectedDocs.length}
         onTaskCreated={selectedDocForTask ? undefined : () => setSelectedDocs([])}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
       />
     </div>
   );

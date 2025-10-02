@@ -5,7 +5,9 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Alert, AlertDescription } from '../ui/alert';
+import { ValidatedInput } from '../ui/validated-input';
 import { useAuth } from '../../lib/auth';
+import { validationRules, ValidationResult } from '../../lib/validation';
 import {
   Eye,
   EyeOff,
@@ -31,8 +33,8 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [emailValid, setEmailValid] = useState(false);
+  const [passwordValid, setPasswordValid] = useState(false);
 
   // Load remembered email
   useEffect(() => {
@@ -43,15 +45,7 @@ export function Login() {
     }
   }, []);
 
-  // Real-time email validation
-  const emailError = emailTouched && email && !email.includes('@') 
-    ? 'Email inválido' 
-    : '';
-
-  // Real-time password validation
-  const passwordError = passwordTouched && password && password.length < 6 
-    ? 'A senha deve ter pelo menos 6 caracteres' 
-    : '';
+  const isFormValid = emailValid && passwordValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,10 +90,18 @@ export function Login() {
         window.dispatchEvent(new PopStateEvent('popstate'));
       }, 500);
     } catch (err: any) {
-      const errorMessage = err.message || 'Credenciais inválidas. Tente novamente.';
-      setError(errorMessage);
-      toast.error('Erro no login', {
-        description: errorMessage,
+      const errorMsg = getErrorMessage('INVALID_CREDENTIALS');
+      setError(errorMsg.description);
+      
+      toast.error(errorMsg.title, {
+        description: errorMsg.suggestion,
+        action: {
+          label: errorMsg.action?.label || 'Tentar novamente',
+          onClick: () => {
+            setEmail('admin@triagem.com');
+            setPassword('demo123');
+          }
+        }
       });
     } finally {
       setLoading(false);
@@ -184,33 +186,19 @@ export function Login() {
                 )}
 
                 {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onBlur={() => setEmailTouched(true)}
-                      className={`pl-10 ${emailError ? 'border-[var(--danger)]' : ''}`}
-                      disabled={loading}
-                      autoComplete="email"
-                      aria-label="Email"
-                      aria-describedby={emailError ? 'email-error' : undefined}
-                      aria-invalid={!!emailError}
-                    />
-                    {email && !emailError && emailTouched && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--success)]" />
-                    )}
-                  </div>
-                  {emailError && (
-                    <p id="email-error" className="text-xs text-[var(--danger)]" role="alert">
-                      {emailError}
-                    </p>
-                  )}
+                <div className="relative">
+                  <Mail className="absolute left-3 top-[38px] -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
+                  <ValidatedInput
+                    label="Email"
+                    value={email}
+                    onChange={setEmail}
+                    onValidation={(result: ValidationResult) => setEmailValid(result.isValid)}
+                    rules={validationRules.email}
+                    placeholder="seu@email.com"
+                    type="email"
+                    className="pl-10"
+                    disabled={loading}
+                  />
                 </div>
 
                 {/* Password Field */}
@@ -285,7 +273,7 @@ export function Login() {
                 <Button
                   type="submit"
                   className="w-full bg-[var(--primary)] hover:bg-[var(--primary-700)]"
-                  disabled={loading || !!emailError || !!passwordError}
+                  disabled={loading || !isFormValid}
                   aria-label={loading ? 'Entrando...' : 'Entrar'}
                 >
                   {loading ? (

@@ -16,6 +16,11 @@ import { Monitoring } from './components/pages/Monitoring';
 import { Layout } from './components/Layout';
 import { Toaster } from './components/ui/sonner';
 import { toAbsolute, replace } from './lib/navigation';
+import { ShortcutsHelp } from './components/ui/shortcuts-help';
+import { Onboarding } from './components/ui/onboarding';
+
+import { SkipLink } from './components/ui/skip-link';
+import './lib/keyboard-shortcuts';
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const BASE = (import.meta as any).env?.BASE_URL || '/';
@@ -101,6 +106,8 @@ function Router() {
     return <Login />;
   }
 
+
+
   // Se autenticado e na rota raiz ou login, trata como dashboard
   const effectivePath = (currentPath === '/' || currentPath === '/login') ? '/dashboard' : currentPath;
 
@@ -179,10 +186,17 @@ function Router() {
   }
 
   return (
-    <Layout currentPage={page} breadcrumbs={breadcrumbs}>
-      {component}
-      <Toaster />
-    </Layout>
+    <>
+      <SkipLink />
+      <Layout currentPage={page} breadcrumbs={breadcrumbs}>
+        <main id="main-content" tabIndex={-1}>
+          {component}
+        </main>
+        <Toaster />
+        <ShortcutsHelp />
+        <Onboarding />
+      </Layout>
+    </>
   );
 }
 

@@ -5,8 +5,10 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ErrorState } from '../ui/error-state';
+import { EnhancedErrorState } from '../ui/enhanced-error-state';
 import { DashboardCardSkeleton, ChartSkeleton } from '../ui/loading-skeletons';
-import { InteractiveChart } from '../ui/interactive-chart';
+import { errorMessages, getErrorMessage } from '../../lib/error-messages';
+import { AccessibleChart } from '../ui/accessible-chart';
 import {
   FileText,
   AlertTriangle,
@@ -19,6 +21,7 @@ import {
   Filter,
   Calendar,
   User,
+  Settings,
 } from 'lucide-react';
 
 import {
@@ -42,6 +45,12 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { navigate } from '../../lib/navigation';
 import { getDashboardData, periodOptions, typeOptions, assigneeOptions, type DashboardFilters } from '../../lib/dashboardData';
 import { toast } from 'sonner';
+import { globalProgress } from '../ui/global-progress';
+import { StatusIndicator } from '../ui/status-indicator';
+import { DashboardCustomizer } from '../ui/dashboard-customizer';
+import { dashboardCustomization, type DashboardLayout } from '../../lib/dashboard-customization';
+import { ContextualHelp } from '../ui/contextual-help';
+import { HelpTooltip } from '../ui/tooltip';
 
 export function Dashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -56,6 +65,8 @@ export function Dashboard() {
     endDate: ''
   });
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [layout, setLayout] = useState<DashboardLayout>(dashboardCustomization.getLayout());
 
   useEffect(() => {
     loadData();
@@ -71,18 +82,27 @@ export function Dashboard() {
   const loadData = async () => {
     setLoading(true);
     setError(null);
+    globalProgress.show('Carregando dashboard...');
+    
     try {
+      globalProgress.setProgress(30, 'Buscando estatísticas...');
       const [statsData, chartsData] = await Promise.all([
         mockApi.getStats(),
         mockApi.getChartData(),
       ]);
+      
+      globalProgress.setProgress(80, 'Processando gráficos...');
       setStats(statsData);
       setChartData(chartsData);
       const data = getDashboardData(filters);
       setDashboardData(data);
+      
+      globalProgress.setProgress(100, 'Dashboard atualizado!');
+      setTimeout(() => globalProgress.hide(), 500);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      setError('Erro ao carregar dados do dashboard.');
+      setError('NETWORK_ERROR');
+      globalProgress.hide();
     } finally {
       setLoading(false);
     }
@@ -124,9 +144,8 @@ export function Dashboard() {
   if (error) {
     return (
       <div className="max-w-[1600px]">
-        <ErrorState
-          title="Erro no Dashboard"
-          message={error}
+        <EnhancedErrorState
+          error={getErrorMessage(error)}
           onRetry={loadData}
         />
       </div>
@@ -171,12 +190,27 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text)] mb-1">Central de Monitoramento</h1>
-          <p className="text-sm text-[var(--muted)]">
-            Visão executiva em tempo real com gráficos interativos e análise detalhada
-          </p>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Central de Monitoramento</h1>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-[var(--muted)]">
+              Visão executiva em tempo real com gráficos interativos e análise detalhada
+            </p>
+            {loading && (
+              <StatusIndicator status="loading" message="Atualizando..." size="sm" />
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
+          <ContextualHelp topic="dashboard" />
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowCustomizer(true)}
+          >
+            <Settings className="w-4 h-4" />
+            <span className="hidden sm:inline">Personalizar</span>
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
@@ -301,16 +335,17 @@ export function Dashboard() {
 
       {/* Filtros */}
       <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg font-bold">
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
             <Filter className="w-5 h-5" />
             Personalizar Visualização
+            <HelpTooltip content="Use os filtros para focar nos dados mais importantes. Deixe campos vazios para mostrar todos os resultados." />
           </CardTitle>
           <p className="text-sm text-[var(--muted)]">
             Ajuste os filtros para focar nos dados que mais importam para você
           </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-2">
           <div className="flex flex-wrap gap-3">
             <div className="space-y-1 w-36">
               <label className="text-xs font-medium text-[var(--muted)]">Período</label>
@@ -374,7 +409,7 @@ export function Dashboard() {
       {dashboardData && (
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
           {/* Documentos por Tipo - Interativo */}
-          <InteractiveChart
+          <AccessibleChart
             title="Documentos por Tipo"
             description="Quantidade de cada tipo processado. Clique nas barras para mais detalhes."
             data={dashboardData.documentsByType}
@@ -383,7 +418,7 @@ export function Dashboard() {
           />
 
           {/* Tarefas por Status - Interativo */}
-          <InteractiveChart
+          <AccessibleChart
             title="Tarefas por Status"
             description="Situação atual das tarefas. Clique nas fatias para ver detalhes."
             data={dashboardData.tasksByStatus}
@@ -396,7 +431,7 @@ export function Dashboard() {
       {/* Tendência de Processamento - Linha */}
       {dashboardData && (
         <div className="mb-6">
-          <InteractiveChart
+          <AccessibleChart
             title="Volume de Processamento"
             description="Evolução do volume processado ao longo do tempo. Linha crescente = maior produtividade."
             data={dashboardData.processingTrend}
@@ -407,7 +442,12 @@ export function Dashboard() {
         </div>
       )}
 
-
+      {/* Dashboard Customizer */}
+      <DashboardCustomizer
+        isOpen={showCustomizer}
+        onClose={() => setShowCustomizer(false)}
+        onLayoutChange={setLayout}
+      />
     </div>
   );
 }

@@ -14,9 +14,15 @@ import {
   Send,
   Cloud,
   HardDrive,
+  HelpCircle,
 } from 'lucide-react';
 import { mockApi } from '../../lib/mockApi';
 import { useToast } from '../ui/toast-provider';
+import { fileValidation } from '../../lib/validation';
+import { globalProgress } from '../ui/global-progress';
+import { StatusIndicator } from '../ui/status-indicator';
+import { ContextualHelp } from '../ui/contextual-help';
+import { HelpTooltip } from '../ui/tooltip';
 
 interface UploadedFile {
   file: File;
@@ -47,12 +53,32 @@ export function Upload() {
     setIsDragging(false);
 
     const droppedFiles = Array.from(e.dataTransfer.files);
+    
+    // Immediate validation feedback
+    const invalidFiles = droppedFiles.filter(file => !fileValidation.validateFile(file).isValid);
+    if (invalidFiles.length > 0) {
+      invalidFiles.forEach(file => {
+        const validation = fileValidation.validateFile(file);
+        toast.error(`${file.name}`, validation.error || 'Arquivo inválido');
+      });
+    }
+    
     processFiles(droppedFiles);
-  }, []);
+  }, [toast]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
+      
+      // Immediate validation feedback
+      const invalidFiles = selectedFiles.filter(file => !fileValidation.validateFile(file).isValid);
+      if (invalidFiles.length > 0) {
+        invalidFiles.forEach(file => {
+          const validation = fileValidation.validateFile(file);
+          toast.error(`${file.name}`, validation.error || 'Arquivo inválido');
+        });
+      }
+      
       processFiles(selectedFiles);
     }
   };
@@ -63,43 +89,29 @@ export function Upload() {
     const errors: string[] = [];
 
     newFiles.forEach((file) => {
-      // File size validation (50MB max)
-      if (file.size > 50 * 1024 * 1024) {
-        errors.push(`${file.name}: Muito grande (máximo 50MB)`);
-        return;
-      }
-
-      // File type validation
-      const allowedTypes = [
-        'application/pdf',
-        'image/jpeg',
-        'image/jpg', 
-        'image/png',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ];
+      const validation = fileValidation.validateFile(file);
       
-      if (!allowedTypes.includes(file.type)) {
-        errors.push(`${file.name}: Formato não aceito`);
-        return;
-      }
-
-      // File name validation
-      const invalidChars = /[<>:"/\\|?*]/;
-      if (invalidChars.test(file.name)) {
-        errors.push(`${file.name}: Nome com caracteres especiais`);
+      if (!validation.isValid) {
+        let errorMsg;
+        if (file.size > fileValidation.maxSize) {
+          errorMsg = getErrorMessage('FILE_TOO_LARGE', file.name, '50MB');
+        } else if (!fileValidation.allowedTypes.includes(file.type)) {
+          errorMsg = getErrorMessage('INVALID_FILE_TYPE', file.name, 'PDF, JPG, PNG, DOC, DOCX');
+        } else {
+          errorMsg = getErrorMessage('UPLOAD_FAILED', file.name);
+        }
+        
+        toast.error(errorMsg.title, {
+          description: errorMsg.suggestion,
+          duration: 8000
+        });
         return;
       }
 
       validFiles.push(file);
     });
 
-    // Show validation errors
-    if (errors.length > 0) {
-      errors.forEach(error => {
-        toast.error('Arquivo inválido', error);
-      });
-    }
+    // Errors are now shown inline during validation
 
     // Process only valid files
     if (validFiles.length === 0) return;
@@ -117,8 +129,11 @@ export function Upload() {
       const fileIndex = files.length + i;
 
       // Upload phase
+      globalProgress.show(`Enviando ${validFiles[i].name}...`);
+      
       for (let progress = 0; progress <= 100; progress += 20) {
         await new Promise((resolve) => setTimeout(resolve, 100));
+        globalProgress.setProgress(progress * 0.6, `Enviando ${validFiles[i].name}... ${progress}%`);
         setFiles((prev) => {
           const updated = [...prev];
           updated[fileIndex] = { ...updated[fileIndex], progress };
@@ -127,6 +142,7 @@ export function Upload() {
       }
 
       // Processing phase
+      globalProgress.setProgress(70, `Processando ${validFiles[i].name}...`);
       setFiles((prev) => {
         const updated = [...prev];
         updated[fileIndex] = { ...updated[fileIndex], status: 'processing' };
@@ -135,6 +151,7 @@ export function Upload() {
 
       // Simulate OCR
       await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 1500));
+      globalProgress.setProgress(100, `${validFiles[i].name} processado!`);
 
       const ocrConfidence = 0.3 + Math.random() * 0.65;
       const score = Math.random();
@@ -153,6 +170,10 @@ export function Upload() {
       });
 
       toast.success('Documento processado!', `${validFiles[i].name} foi analisado com sucesso`);
+      
+      if (i === validFiles.length - 1) {
+        setTimeout(() => globalProgress.hide(), 1000);
+      }
     }
   };
 
@@ -213,16 +234,19 @@ export function Upload() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Enviar Documentos</h1>
-        <p className="text-[var(--muted)]">
-          Faça upload dos seus arquivos para análise automática e classificação inteligente
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Enviar Documentos</h1>
+          <p className="text-[var(--muted)]">
+            Faça upload dos seus arquivos para análise automática e classificação inteligente
+          </p>
+        </div>
+        <ContextualHelp topic="upload" />
       </div>
 
       {/* Upload Area */}
       <Card>
-        <CardContent className="p-8">
+        <CardContent className="p-6">
           <div
             className={`
               border-2 border-dashed rounded-xl p-12 text-center transition-all
@@ -238,9 +262,16 @@ export function Upload() {
           >
             <UploadIcon className="w-12 h-12 mx-auto mb-4 text-[var(--primary)]" />
             <h3 className="mb-2">Solte seus arquivos aqui</h3>
-            <p className="text-[var(--muted)] mb-4">
-              PDF, imagens, Word (até 50MB cada)
-            </p>
+            <div className="text-[var(--muted)] mb-4 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Formatos aceitos:</span> PDF, JPG, PNG, DOC, DOCX
+                <HelpTooltip content="PDFs digitais têm melhor precisão OCR que fotos" />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">Tamanho máximo:</span> 50MB por arquivo
+                <HelpTooltip content="Arquivos maiores podem demorar mais para processar" />
+              </div>
+            </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <label>
@@ -280,10 +311,10 @@ export function Upload() {
       {/* Uploaded Files */}
       {files.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 pb-2">
             <CardTitle className="text-lg font-semibold">Arquivos ({files.length})</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-4 pt-2 space-y-4">
             {files.map((uploadedFile, index) => {
               const confidenceBadge = uploadedFile.ocrConfidence
                 ? getConfidenceBadge(uploadedFile.ocrConfidence)
@@ -365,38 +396,51 @@ export function Upload() {
 
                       {/* Low confidence warning */}
                       {uploadedFile.status === 'complete' &&
-                        uploadedFile.ocrConfidence! < 0.7 && (
-                          <Alert className="mt-3 bg-[var(--warning)]/10 border-[var(--warning)]">
-                            <AlertTriangle className="w-4 h-4 text-[var(--warning)]" />
-                            <AlertDescription>
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-sm">
-                                  Texto não ficou muito claro. Tentar novamente?
-                                </span>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="gap-1"
-                                    onClick={() => handleReprocess(index)}
-                                  >
-                                    <RefreshCw className="w-3 h-3" />
-                                    Tentar Novamente
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="gap-1"
-                                    onClick={() => handleRequestResend(index)}
-                                  >
-                                    <Send className="w-3 h-3" />
-                                    Pedir Reenvio
-                                  </Button>
+                        uploadedFile.ocrConfidence! < 0.7 && (() => {
+                          const ocrError = getErrorMessage('OCR_LOW_CONFIDENCE', Math.round(uploadedFile.ocrConfidence! * 100));
+                          return (
+                            <Alert className="mt-3 bg-[var(--warning)]/10 border-[var(--warning)]">
+                              <AlertTriangle className="w-4 h-4 text-[var(--warning)]" />
+                              <AlertDescription>
+                                <div className="space-y-2">
+                                  <div className="text-sm font-medium">{ocrError.title}</div>
+                                  <div className="text-xs text-[var(--muted)]">{ocrError.suggestion}</div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1"
+                                      onClick={() => handleReprocess(index)}
+                                    >
+                                      <RefreshCw className="w-3 h-3" />
+                                      Reprocessar
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1"
+                                      onClick={() => handleRequestResend(index)}
+                                    >
+                                      <Send className="w-3 h-3" />
+                                      Pedir Reenvio
+                                    </Button>
+                                    {ocrError.helpLink && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="gap-1 text-[var(--primary)]"
+                                        onClick={() => window.open(ocrError.helpLink, '_blank')}
+                                      >
+                                        <HelpCircle className="w-3 h-3" />
+                                        Ajuda
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                              </AlertDescription>
+                            </Alert>
+                          );
+                        })()}
                     </div>
                   </div>
                 </div>
@@ -409,10 +453,10 @@ export function Upload() {
       {/* Tips */}
       {files.length === 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 pb-2">
             <CardTitle className="text-lg font-semibold">Como obter melhores resultados</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-2">
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-3">
                 <CheckCircle className="w-4 h-4 text-[var(--success)] flex-shrink-0" />
