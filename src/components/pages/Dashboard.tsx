@@ -197,40 +197,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Resumo Geral do Sistema */}
-      <Card className="mb-6">
-        <CardHeader className="px-4 pt-2 pb-0">
-          <CardTitle className="text-base font-bold">Visão Geral</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-2 pt-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                {stats?.totalDocuments || 0}
-              </div>
-              <div className="text-sm text-[var(--muted)]">Total</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--primary)]">
-                {(stats?.totalDocuments || 0) - (stats?.pendingReview || 0)}
-              </div>
-              <div className="text-sm text-[var(--muted)]">Concluídos</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--warning)]">
-                2.8min
-              </div>
-              <div className="text-sm text-[var(--muted)]">Tempo/Doc</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[var(--success)]">
-                94%
-              </div>
-              <div className="text-sm text-[var(--muted)]">Precisão</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Alerts */}
       <Alert 
