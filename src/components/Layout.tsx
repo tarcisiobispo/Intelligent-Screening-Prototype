@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { GlobalProgress } from './ui/global-progress';
 import { StatusIndicator } from './ui/status-indicator';
+import { CommandPalette } from './ui/command-palette';
+import { navigationHistory } from '../lib/navigation-history';
 import { useAuth } from '../lib/auth';
 import { Button } from './ui/button';
 import { navigate } from '../lib/navigation';
@@ -69,6 +71,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [globalProgressState, setGlobalProgressState] = useState({
     isVisible: false,
     progress: 0,
@@ -80,8 +83,19 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
       setGlobalProgressState(event.detail);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+
     window.addEventListener('globalProgress', handleGlobalProgress as EventListener);
-    return () => window.removeEventListener('globalProgress', handleGlobalProgress as EventListener);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('globalProgress', handleGlobalProgress as EventListener);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Mock notifications data
@@ -313,37 +327,27 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
         {/* Breadcrumbs with Status */}
         <div className="bg-[var(--surface)] border-b border-[var(--border)] px-4 py-3">
           <div className="flex items-center justify-between">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href={withBase('/')}>
-                    <Home className="w-4 h-4" />
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator>
-                  <ChevronRight className="w-4 h-4" />
-                </BreadcrumbSeparator>
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="flex items-center gap-2">
-                    {menuItems.find(item => item.id === currentPage)?.label || 'Página'}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-                {breadcrumbs.map((crumb, index) => (
-                  <div key={index} className="flex items-center">
-                    <BreadcrumbSeparator>
-                      <ChevronRight className="w-4 h-4" />
-                    </BreadcrumbSeparator>
-                    <BreadcrumbItem>
-                      {index === breadcrumbs.length - 1 || !crumb.href ? (
-                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink href={withBase(crumb.href)}>{crumb.label}</BreadcrumbLink>
-                      )}
-                    </BreadcrumbItem>
-                  </div>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
+            <div className="flex items-center gap-2 text-sm">
+              <a href={withBase('/')} className="hover:text-[var(--primary)] flex items-center">
+                <Home className="w-3 h-3 text-[var(--muted)]" />
+              </a>
+              <ChevronRight className="w-3 h-3 text-[var(--muted)]" />
+              <span className="font-medium">
+                {menuItems.find(item => item.id === currentPage)?.label || 'Página'}
+              </span>
+              {breadcrumbs.map((crumb, index) => (
+                <React.Fragment key={index}>
+                  <ChevronRight className="w-3 h-3 text-[var(--muted)]" />
+                  {crumb.href ? (
+                    <a href={withBase(crumb.href)} className="hover:text-[var(--primary)] font-medium">
+                      {crumb.label}
+                    </a>
+                  ) : (
+                    <span className="font-medium">{crumb.label}</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
             
             {/* Page Status Indicator */}
             <StatusIndicator 
@@ -358,6 +362,12 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
           {children}
         </div>
       </div>
+      
+      {/* Command Palette */}
+      <CommandPalette 
+        isOpen={showCommandPalette} 
+        onClose={() => setShowCommandPalette(false)} 
+      />
     </div>
   );
 }

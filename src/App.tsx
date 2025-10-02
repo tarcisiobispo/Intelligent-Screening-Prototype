@@ -122,7 +122,6 @@ function Router() {
     page = 'documents';
     component = <DocumentViewer documentId={documentId} />;
     breadcrumbs = [
-      { label: 'Documentos', href: '/documents' },
       { label: 'Visualizar' },
     ];
   } else {
@@ -136,42 +135,42 @@ function Router() {
       case '/upload':
         page = 'upload';
         component = <Upload />;
-        breadcrumbs = [{ label: 'Upload' }];
+        breadcrumbs = [];
         break;
       case '/documents':
         page = 'documents';
         component = <Documents />;
-        breadcrumbs = [{ label: 'Documentos' }];
+        breadcrumbs = [];
         break;
       case '/tasks':
         page = 'tasks';
         component = <Tasks />;
-        breadcrumbs = [{ label: 'Tarefas' }];
+        breadcrumbs = [];
         break;
       case '/monitoring':
         page = 'monitoring';
         component = <Monitoring />;
-        breadcrumbs = [{ label: 'Monitoramento' }];
+        breadcrumbs = [];
         break;
       case '/admin':
         page = 'admin';
         component = <Admin />;
-        breadcrumbs = [{ label: 'Administração' }];
+        breadcrumbs = [];
         break;
       case '/help':
         page = 'help';
         component = <Help />;
-        breadcrumbs = [{ label: 'Ajuda' }];
+        breadcrumbs = [];
         break;
       case '/logs':
         page = 'logs';
         component = <Logs />;
-        breadcrumbs = [{ label: 'Logs' }];
+        breadcrumbs = [];
         break;
       case '/notifications':
         page = 'notifications';
         component = <Notifications />;
-        breadcrumbs = [{ label: 'Notificações' }];
+        breadcrumbs = [];
         break;
       default:
         // Unknown route - redireciona para dashboard
