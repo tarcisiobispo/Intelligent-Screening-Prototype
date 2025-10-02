@@ -165,16 +165,16 @@ export function Login() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] mb-4">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h1 className="ds-h1 mb-2">Triagem Inteligente</h1>
-            <p className="ds-body text-[var(--muted)]">
+            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">Triagem Inteligente</h1>
+            <p className="text-sm text-[var(--muted)]">
               Sistema de análise de documentos para Energia & Infraestrutura
             </p>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="ds-h4">Entrar na plataforma</CardTitle>
-              <CardDescription className="ds-body text-[var(--muted)]">
+              <CardTitle className="text-lg font-semibold">Entrar na plataforma</CardTitle>
+              <CardDescription className="text-sm text-[var(--muted)]">
                 Insira suas credenciais para acessar o sistema
               </CardDescription>
             </CardHeader>
@@ -292,7 +292,7 @@ export function Login() {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="ds-button ds-button-primary ds-button-md w-full"
+                  className="w-full bg-[var(--primary)] hover:bg-[var(--primary-700)] text-white font-medium h-10 px-4 rounded-md"
                   disabled={loading}
                   aria-label={loading ? 'Entrando...' : 'Entrar'}
                 >
@@ -309,7 +309,7 @@ export function Login() {
                 {/* Demo Login Button */}
                 <Button
                   type="button"
-                  className="ds-button ds-button-outline ds-button-md w-full"
+                  className="w-full border border-[var(--border)] hover:bg-gray-50 font-medium h-10 px-4 rounded-md"
                   onClick={handleDemoLogin}
                   disabled={loading}
                 >

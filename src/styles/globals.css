@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import './design-system.css';
 
 
 /* Sidebar mini/expandido responsivo com hover */
@@ -172,10 +171,13 @@
   }
 }
 
-/* Variáveis de tema com contraste WCAG 2.1 AA (4.5:1) */
+/* Sistema de Design Simples - Apenas Variáveis */
 :root {
+  /* Cores com contraste WCAG 2.1 AA */
   --primary: #003D5C;
   --primary-700: #002A3F;
+  --secondary: #D97706;
+  --secondary-600: #B45309;
   --success: #0F7B0F;
   --danger: #B91C1C;
   --warning: #D97706;
@@ -187,14 +189,25 @@
   --surface: #FFFFFF;
   --border: #D1D5DB;
 
+  /* Tipografia */
+  --font-h1: 1.875rem; /* 30px */
+  --font-h2: 1.5rem;   /* 24px */
+  --font-h3: 1.25rem;  /* 20px */
+  --font-body: 0.875rem; /* 14px */
+  
+  /* Espaçamentos */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  
   /* shadcn/ui tokens */
   --card: #FFFFFF;
   --card-foreground: #0F172A;
-  --input-background: #FFFFFF;
   --input: #D1D5DB;
   --muted-foreground: #4B5563;
   --primary-foreground: #FFFFFF;
-  --secondary: #D97706;
   --secondary-foreground: #FFFFFF;
   --accent-foreground: #FFFFFF;
   --destructive: #B91C1C;
