@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Alert, AlertDescription } from '../ui/alert';
-import { ValidatedInput } from '../ui/validated-input';
+
 import { useAuth } from '../../lib/auth';
 import { validationRules, ValidationResult } from '../../lib/validation';
 import { getErrorMessage } from '../../lib/error-messages';
@@ -38,7 +38,12 @@ export function Login() {
   const [passwordValid, setPasswordValid] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  
+  // Estados visuais calculados
+  const emailError = emailTouched && (!email.includes('@') || email.length < 5);
+  const passwordError = passwordTouched && password.length < 6;
+  const emailSuccess = emailTouched && email.includes('@') && email.length >= 5;
+  const passwordSuccess = passwordTouched && password.length >= 6;
 
   // Load remembered email
   useEffect(() => {
@@ -49,7 +54,7 @@ export function Login() {
     }
   }, []);
 
-  const isFormValid = emailValid && passwordValid;
+  const isFormValid = email.length > 0 && password.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,7 +198,6 @@ export function Login() {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
                     <Input
                       id="email"
                       type="email"
@@ -201,19 +205,26 @@ export function Login() {
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
-                        setEmailValid(e.target.value.includes('@'));
+                        setEmailValid(e.target.value.includes('@') && e.target.value.length >= 5);
                       }}
-                      className="pl-10"
+                      onBlur={() => setEmailTouched(true)}
+                      className={`${
+                        emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 
+                        emailSuccess ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''
+                      }`}
                       disabled={loading}
                     />
+
                   </div>
+                  {emailError && (
+                    <p className="text-xs text-red-500">Email deve ter formato válido</p>
+                  )}
                 </div>
 
                 {/* Password Field */}
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)] z-10" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -223,9 +234,14 @@ export function Login() {
                         setPassword(e.target.value);
                         setPasswordValid(e.target.value.length >= 6);
                       }}
-                      className="pl-10 pr-10"
+                      onBlur={() => setPasswordTouched(true)}
+                      className={`pr-10 ${
+                        passwordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 
+                        passwordSuccess ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''
+                      }`}
                       disabled={loading}
                     />
+
                     <Button
                       type="button"
                       variant="ghost"
@@ -241,6 +257,9 @@ export function Login() {
                       )}
                     </Button>
                   </div>
+                  {passwordError && (
+                    <p className="text-xs text-red-500">Senha deve ter pelo menos 6 caracteres</p>
+                  )}
                 </div>
 
                 {/* Remember Me and Forgot Password */}
@@ -274,7 +293,7 @@ export function Login() {
                 <Button
                   type="submit"
                   className="w-full bg-[var(--primary)] hover:bg-[var(--primary-700)]"
-                  disabled={loading || !isFormValid}
+                  disabled={loading}
                   aria-label={loading ? 'Entrando...' : 'Entrar'}
                 >
                   {loading ? (

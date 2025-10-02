@@ -282,3 +282,35 @@ button.hover\:bg-\[var\(--accent\)\]:hover svg {
 .hover\:bg-\[var\(--accent\)\]:hover .text-xs {
   color: white !important;
 }
+/* Estados de validação de formulário */
+.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+.border-green-500 {
+  border-color: #22c55e !important;
+}
+
+.focus\:border-red-500:focus {
+  border-color: #ef4444 !important;
+}
+
+.focus\:border-green-500:focus {
+  border-color: #22c55e !important;
+}
+
+.focus\:ring-red-500:focus {
+  --tw-ring-color: #ef4444 !important;
+}
+
+.focus\:ring-green-500:focus {
+  --tw-ring-color: #22c55e !important;
+}
+
+.text-red-500 {
+  color: #ef4444 !important;
+}
+
+.text-green-500 {
+  color: #22c55e !important;
+}
