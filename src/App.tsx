@@ -16,9 +16,6 @@ import { Monitoring } from './components/pages/Monitoring';
 import { NotFound } from './components/pages/NotFound';
 import { Error } from './components/pages/Error';
 import { Maintenance } from './components/pages/Maintenance';
-import { Profile } from './components/pages/Profile';
-import { Settings } from './components/pages/Settings';
-import { UserManagement } from './components/pages/UserManagement';
 import { Layout } from './components/Layout';
 import { Toaster } from './components/ui/sonner';
 import { toAbsolute, replace } from './lib/navigation';
@@ -177,22 +174,6 @@ function Router() {
       case '/notifications':
         page = 'notifications';
         component = <Notifications />;
-        breadcrumbs = [];
-        break;
-      case '/profile':
-        page = 'profile';
-        component = <Profile />;
-        breadcrumbs = [];
-        break;
-      case '/settings':
-        page = 'settings';
-        component = <Settings />;
-        breadcrumbs = [];
-        break;
-      case '/users':
-      case '/user-management':
-        page = 'users';
-        component = <UserManagement />;
         breadcrumbs = [];
         break;
       case '/404':

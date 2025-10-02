@@ -300,8 +300,8 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>Configurações</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toast.info('Perfil', { description: 'Recurso em desenvolvimento' })}>Perfil</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>Configurações</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-[var(--danger)]" onClick={() => {
                     const shouldLogout = window.confirm('Deseja realmente sair do sistema?');
