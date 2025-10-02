@@ -200,16 +200,14 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
         <header className="h-16 bg-[var(--surface)] border-b border-[var(--border)] sticky top-0 z-30 shadow-sm" role="banner">
           <div className="h-full px-6 flex items-center justify-between gap-4">
             {/* Left section */}
-            <div className="flex items-center gap-4 flex-1">
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 hover:bg-[var(--bg)] rounded-lg">
-                <Menu className="w-5 h-5" />
-              </button>
+            <div className="flex items-center gap-4">
+
               {/* Search */}
-              <div className="relative flex-1 max-w-md hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
+              <div className="relative w-64">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
                 <Input
-                  placeholder="Buscar documentos, tarefas..."
-                  className="pl-10 h-9 bg-[var(--bg)] border-[var(--border)] text-sm"
+                  placeholder="Buscar..."
+                  className="pl-8 h-8 bg-[var(--bg)] border-[var(--border)] text-sm w-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -223,20 +221,13 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
             </div>
             {/* Right section */}
             <div className="flex items-center gap-1">
-              {/* Mobile search */}
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => {
-                const query = prompt('Buscar:');
-                if (query) navigate(`/documents?search=${encodeURIComponent(query)}`);
-              }} aria-label="Buscar">
-                <Search className="w-5 h-5" aria-hidden="true" />
-              </Button>
               {/* Notifications */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label={`Notificações${notifications.filter(n => !n.read).length > 0 ? ` (${notifications.filter(n => !n.read).length} não lidas)` : ''}`}>
-                    <Bell className="w-5 h-5" aria-hidden="true" />
+                  <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label={`Notificações${notifications.filter(n => !n.read).length > 0 ? ` (${notifications.filter(n => !n.read).length} não lidas)` : ''}`}>
+                    <Bell className="w-4 h-4" aria-hidden="true" />
                     {notifications.filter(n => !n.read).length > 0 && (
-                      <Badge className="absolute top-0 right-0 w-4 h-4 p-0 flex items-center justify-center bg-[var(--danger)] text-white border-0 text-[10px] leading-none">
+                      <Badge className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center bg-[var(--danger)] text-white border-0 text-[10px] leading-none">
                         {notifications.filter(n => !n.read).length}
                       </Badge>
                     )}
@@ -300,8 +291,8 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="bg-[var(--primary)] text-white">{user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'JS'}</AvatarFallback>
+                    <Avatar className="w-7 h-7">
+                      <AvatarFallback className="bg-[var(--primary)] text-white text-xs">{user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'JS'}</AvatarFallback>
                     </Avatar>
                     <span className="hidden md:block text-sm font-medium">{user?.name || 'João Silva'}</span>
                   </button>
@@ -358,7 +349,7 @@ export function Layout({ children, currentPage, breadcrumbs = [] }: LayoutProps)
           </div>
         </div>
         {/* Page content */}
-        <div className="flex-1 p-4 md:p-6 lg:p-8" style={{ marginTop: globalProgressState.isVisible ? '60px' : '0' }}>
+        <div className="flex-1 p-4 md:p-6 lg:p-8 pb-20 lg:pb-8" style={{ marginTop: globalProgressState.isVisible ? '60px' : '0' }}>
           {children}
         </div>
       </div>

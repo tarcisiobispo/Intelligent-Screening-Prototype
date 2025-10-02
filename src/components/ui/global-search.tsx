@@ -149,7 +149,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center pt-16 z-50">
-      <Card className="w-full max-w-lg mx-4 bg-[var(--surface)] border border-[var(--border)] shadow-xl">
+      <Card className="w-full max-w-md mx-4 bg-[var(--surface)] border border-[var(--border)] shadow-xl">
         <CardContent className="p-0">
           {/* Search Input */}
           <div className="flex items-center gap-3 p-4 border-b border-[var(--border)]">

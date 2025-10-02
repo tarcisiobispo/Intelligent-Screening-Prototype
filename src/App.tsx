@@ -20,6 +20,7 @@ import { ShortcutsHelp } from './components/ui/shortcuts-help';
 import { Onboarding } from './components/ui/onboarding';
 
 import { SkipLink } from './components/ui/skip-link';
+import { MobileNav } from './components/ui/mobile-nav';
 import './lib/keyboard-shortcuts';
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -195,6 +196,7 @@ function Router() {
         <ShortcutsHelp />
         <Onboarding />
       </Layout>
+      <MobileNav currentPage={page} />
     </>
   );
 }
