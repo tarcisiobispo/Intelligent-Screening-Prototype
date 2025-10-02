@@ -38,11 +38,7 @@ export function Login() {
   const [passwordValid, setPasswordValid] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
-  
-  const emailError = emailTouched && !emailValid && email.length > 0;
-  const passwordError = passwordTouched && !passwordValid && password.length > 0;
-  const emailSuccess = emailTouched && emailValid;
-  const passwordSuccess = passwordTouched && passwordValid;
+  const [passwordError, setPasswordError] = useState('');
 
   // Load remembered email
   useEffect(() => {
@@ -205,28 +201,12 @@ export function Login() {
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value);
-                        setEmailValid(e.target.value.includes('@') && e.target.value.length > 3);
+                        setEmailValid(e.target.value.includes('@'));
                       }}
-                      onBlur={() => setEmailTouched(true)}
-                      className={`pl-10 pr-10 ${
-                        emailError ? 'border-red-500 focus:border-red-500' : 
-                        emailSuccess ? 'border-green-500 focus:border-green-500' : ''
-                      }`}
+                      className="pl-10"
                       disabled={loading}
                     />
-                    {emailTouched && email.length > 0 && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {emailValid ? (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 text-red-500" />
-                        )}
-                      </div>
-                    )}
                   </div>
-                  {emailError && (
-                    <p className="text-xs text-red-500">Email inválido</p>
-                  )}
                 </div>
 
                 {/* Password Field */}
@@ -243,22 +223,9 @@ export function Login() {
                         setPassword(e.target.value);
                         setPasswordValid(e.target.value.length >= 6);
                       }}
-                      onBlur={() => setPasswordTouched(true)}
-                      className={`pl-10 pr-16 ${
-                        passwordError ? 'border-red-500 focus:border-red-500' : 
-                        passwordSuccess ? 'border-green-500 focus:border-green-500' : ''
-                      }`}
+                      className="pl-10 pr-10"
                       disabled={loading}
                     />
-                    {passwordTouched && password.length > 0 && (
-                      <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                        {passwordValid ? (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 text-red-500" />
-                        )}
-                      </div>
-                    )}
                     <Button
                       type="button"
                       variant="ghost"
@@ -274,9 +241,6 @@ export function Login() {
                       )}
                     </Button>
                   </div>
-                  {passwordError && (
-                    <p className="text-xs text-red-500">Mínimo 6 caracteres</p>
-                  )}
                 </div>
 
                 {/* Remember Me and Forgot Password */}
